@@ -1,4 +1,4 @@
-# Biomechanical analysis for weightlifting performance enhancement
+# Biomechanical analysis for weightlifting performance enhancement(Mobile App)
 
 Topic - Biomechanical analysis for weightlifting performance 
         enhancement
