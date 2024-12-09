@@ -16,7 +16,7 @@ export default function LoginScreen({ navigation }) {
       <Image source={require('../assets/images/login.jpg')} style={styles.logo} />
       <Card style={styles.card}>
         <Card.Content>
-          <Text style={styles.title}>Welcome to Power App</Text>
+          <Text style={styles.title}>Welcome to FormFit </Text>
           <View style={styles.inputContainer}>
             <Icon name="email-outline" size={20} color="gray" style={styles.icon} />
             <TextInput
