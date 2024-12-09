@@ -1,10 +1,16 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+
+import LoginScreen from '../screens/LoginScreen';
+import SignUpScreen from '../screens/SignUpScreen';
+import MainScreen from '../screens/MainScreen';
+//import ExerciseScreen from '../screens/ExerciseDetailsScreen';
+//import ComparisonPage from '../screens/ComparisonPage';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -27,12 +33,17 @@ export default function RootLayout() {
     return null;
   }
 
+  const Stack = createNativeStackNavigator();
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="MainScreen" component={MainScreen} options={{ headerShown: false }} />
+        {/* <Stack.Screen name="Exercises" component={ExerciseScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ComparisonPage" component={ComparisonPage} options={{ headerShown: false }} /> */}
+      </Stack.Navigator>
       <StatusBar style="auto" />
     </ThemeProvider>
   );
