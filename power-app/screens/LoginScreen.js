@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import PropTypes from 'prop-types';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card, Button } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -13,7 +14,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/images/login.jpg')} style={styles.logo} />
+      {/* <Image source={require('../assets/images/login.jpg')} style={styles.logo} /> */}
       <Card style={styles.card}>
         <Card.Content>
           <Text style={styles.title}>Welcome to FormFit </Text>
@@ -49,6 +50,11 @@ export default function LoginScreen({ navigation }) {
     </View>
   );
 }
+LoginScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 const styles = StyleSheet.create({
   container: {

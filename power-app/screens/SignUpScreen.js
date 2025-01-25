@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card, Button } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -63,6 +64,9 @@ export default function SignUpScreen({ navigation }) {
     </View>
   );
 }
+SignUpScreen.propTypes = {
+  navigation: PropTypes.object.isRequired,
+};
 
 const styles = StyleSheet.create({
   container: {

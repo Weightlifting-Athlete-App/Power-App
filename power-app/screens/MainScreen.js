@@ -1,5 +1,6 @@
 // screens/MainScreen.js
 import React from 'react';
+import PropTypes from 'prop-types';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 export default function MainScreen({ navigation }) {
@@ -27,6 +28,11 @@ export default function MainScreen({ navigation }) {
     </View>
   );
 }
+MainScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 const styles = StyleSheet.create({
   container: {
