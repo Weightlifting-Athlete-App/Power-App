@@ -1,14 +1,25 @@
+// models/User.js
 const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const PoseDataSchema = new mongoose.Schema({
-  shoulder_angle: Number,
-  knees_angle: Number,
-  back_angle: Number,
-  wrist_angle: Number,
-  hips_angle: Number,
+const PoseDataSchema = new Schema({
+  angles: {
+    shoulder_angle: Number,
+    knees_angle: Number,
+    back_angle: Number,
+    wrist_angle: Number,
+    hips_angle: Number,
+  },
+  correctness: {
+    shoulder_angle: Number,
+    knees_angle: Number,
+    back_angle: Number,
+    wrist_angle: Number,
+    hips_angle: Number,
+  },
 });
 
-const InjuryRiskSchema = new mongoose.Schema({
+const InjuryRiskSchema = new Schema({
   shoulder_angle: String,
   knees_angle: String,
   back_angle: String,
@@ -16,7 +27,7 @@ const InjuryRiskSchema = new mongoose.Schema({
   hips_angle: String,
 });
 
-const UserSchema = new mongoose.Schema({
+const UserSchema = new Schema({
   username: { type: String, required: true },
   age: Number,
   age_start: Number,
@@ -30,4 +41,7 @@ const UserSchema = new mongoose.Schema({
   performance_category: String,
 });
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model("User", UserSchema, "User_Data");
+// routes/UserRoutes.js
+
+

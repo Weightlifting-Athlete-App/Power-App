@@ -1,40 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { getUserData } from '../services/api';
 
 interface FeedbackProps {
   username: string;
 }
 
+interface UserData {
+  username: string;
+  age: number;
+  yrs_experience: number;
+  body_weight: number;
+  lifted_weight: number;
+  pose_data: {
+    angles: { [key: string]: number };
+    correctness: { [key: string]: number };
+  };
+  injury_risk: { [key: string]: string };
+  predicted_performance: number;
+  performance_category: string;
+}
+
 const Feedback: React.FC<FeedbackProps> = ({ username }) => {
-  interface UserData {
-    username: string;
-    age: number;
-    yrs_experience: number;
-    body_weight: number;
-    lifted_weight: number;
-    pose_data: { [key: string]: number };
-    injury_risk: { [key: string]: string };
-    predicted_performance: number;
-    performance_category: string;
-  }
-  
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getUserData(username);
+        const data = await getUserData("Ashan"); 
+        console.log("Fetched Data:", data); 
         setUserData(data);
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching user data:", error);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [username]);
+  }, []);
+
+   // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const data = await getUserData(username);
+  //       setUserData(data);
+  //     } catch (error) {
+  //       console.error(error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [username]);
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -44,88 +62,231 @@ const Feedback: React.FC<FeedbackProps> = ({ username }) => {
     return <Text>No data available.</Text>;
   }
 
-  const { pose_data, injury_risk, predicted_performance, performance_category } = userData;
+  const { angles } = userData.pose_data;
+  const { injury_risk } = userData;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>User Profile:</Text>
-      <Text>Username: {userData.username}</Text>
-      <Text>Age: {userData.age}</Text>
-      <Text>Years of Experience: {userData.yrs_experience}</Text>
-      <Text>Body Weight: {userData.body_weight} kg</Text>
-      <Text>Lifted Weight: {userData.lifted_weight} kg</Text>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
+        <Text style={styles.header}>User Details:</Text>
+        <View style={styles.card}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            <View style={{ width: '50%' }}>
+              <Text style={styles.infoText}>Username: {userData.username}</Text>
+              <Text style={styles.infoText}>Age: {userData.age}</Text>
+              <Text style={styles.infoText}>Years of Experience: {userData.yrs_experience}</Text>
+            </View>
+            <View style={{ width: '50%' }}>
+              <Text style={styles.infoText}>Body Weight: {userData.body_weight} kg</Text>
+              <Text style={styles.infoText}>Lifted Weight: {userData.lifted_weight} kg</Text>
+            </View>
+          </View>
+        </View>
 
-      <Text style={styles.header}>Pose Analysis and Injury Risk:</Text>
-      {Object.keys(pose_data).map((key) => (
-        <View key={key} style={styles.riskContainer}>
-          <Text style={styles.angleText}>
-            {key.replace('_', ' ').toUpperCase()}: {pose_data[key]}°
+        <Text style={styles.header}>Predicted Performance:</Text>
+        <View style={styles.predictedPerformanceContainer}>
+          <Text style={styles.performanceScoreText}>
+            Score: {userData.predicted_performance.toFixed(2)}%
           </Text>
-          <Text style={styles.riskText}>
-            Risk Level: {injury_risk[key]}
-          </Text>
-          <Text style={styles.feedbackText}>
-            {generateFeedback(key, pose_data[key], injury_risk[key])}
+          <Text style={styles.performanceCategoryText}>
+            Category: {userData.performance_category}
           </Text>
         </View>
-      ))}
 
-      <Text style={styles.header}>Predicted Performance:</Text>
-      <Text>Score: {predicted_performance.toFixed(2)}%</Text>
-      <Text>Category: {performance_category}</Text>
-    </View>
+        <Text style={styles.header}>Pose Analysis and Injury Risk:</Text>
+        {Object.keys(angles).map((key) => (
+          <View key={key} style={styles.riskContainer}>
+            <Text style={styles.angleText}>
+              {key.replace('_', ' ').toUpperCase()}: {angles[key]}°
+            </Text>
+            <Text style={styles.riskText}>
+              Risk Level: {injury_risk && injury_risk[key] ? injury_risk[key] : 'No risk data'}
+            </Text>
+            <Text style={styles.feedbackText}>
+              {generateFeedback(key, angles[key], injury_risk && injury_risk[key], userData)}
+            </Text>
+          </View>
+        ))}
+
+        
+      </View>
+    </ScrollView>
   );
 };
 
-const generateFeedback = (joint: string, angle: number, riskLevel: string): string => {
+const generateFeedback = (joint: string, angle: number, riskLevel?: string, userData?: UserData): string => {
+  const { yrs_experience = 0, body_weight = 0, predicted_performance = 0, performance_category = '' } = userData || {};
+
+  let feedback = '';
+
   switch (joint) {
     case 'shoulder_angle':
-      return riskLevel === '🔴 High Risk'
-        ? 'An extremely low shoulder angle may indicate improper shoulder positioning, potentially leading to shoulder impingement or strain. Ensure shoulders are properly aligned and engaged during lifts.'
-        : 'Shoulder positioning appears to be within a safe range.';
+      if (yrs_experience < 2) {
+        feedback = riskLevel === '🔴 High Risk'
+          ? 'Your shoulder angle suggests potential impingement. Focus on scapular stability and shoulder mobility. Consider working on rotator cuff exercises.'
+          : 'Shoulder positioning is good. Work on scapular control and overhead mobility to enhance your performance.';
+      } else {
+        feedback = riskLevel === '🔴 High Risk'
+          ? 'High risk of shoulder impingement. Consider lowering the barbell position to reduce shoulder strain.'
+          : 'Good shoulder alignment. Work on maintaining your scapular retraction during lifts for better stability.';
+      }
+      break;
+      
     case 'knees_angle':
-      return riskLevel === '🟠 Moderate Risk'
-        ? 'A knee angle less than 90° suggests deep knee flexion, which can increase stress on the knee joint. While deep squats can be beneficial, they should be performed with caution and proper technique to avoid undue stress.'
-        : 'Knee positioning appears to be within a safe range.';
+      if (body_weight > 100) {
+        feedback = riskLevel === '🟠 Moderate Risk'
+          ? 'Your knee angle suggests deep knee flexion. Ensure stability and control. Improve your ankle mobility and strengthen your quads.'
+          : 'Knee positioning is safe. Focus on engaging your glutes more during squats, and work on ankle mobility.';
+      } else {
+        feedback = riskLevel === '🟠 Moderate Risk'
+          ? 'Deep knee flexion may cause strain. Work on improving ankle mobility and quadriceps strength.'
+          : 'Knee position is good, but make sure your feet are properly aligned to avoid knee strain.';
+      }
+      break;
+      
     case 'back_angle':
-      return riskLevel === '🔴 High Risk'
-        ? 'A back angle close to 180° indicates a nearly straight back, which is generally good. However, if this angle is due to hyperextension, it can lead to lumbar spine issues. Ensure a neutral spine position is maintained.'
-        : 'Back positioning appears to be within a safe range.';
-    case 'wrist_angle':
-      return riskLevel === '🟢 Low Risk'
-        ? 'A wrist angle of 170° is within a safe range, indicating proper wrist positioning during lifts.'
-        : 'Wrist positioning may need adjustment to ensure safety.';
-    case 'hips_angle':
-      return riskLevel === '🔴 High Risk'
-        ? 'A hips angle close to 180° suggests a nearly straight hip position. If this results from hyperextension, it can strain the hip flexors and lower back. Aim for a neutral hip position to distribute forces evenly.'
-        : 'Hip positioning appears to be within a safe range.';
+      if (predicted_performance < 60) {
+        feedback = riskLevel === '🔴 High Risk'
+          ? 'Your back angle suggests possible hyperextension. Focus on core stability and engage your lats for a neutral spine.'
+          : 'Back angle is good. Focus on core bracing and posterior chain exercises to improve your deadlift technique.';
+      } else {
+        feedback = riskLevel === '🔴 High Risk'
+          ? 'Back hyperextension is a serious risk. Ensure your spine stays neutral by bracing your core and using correct hip hinge form.'
+          : 'Good back positioning. Strengthen your lower back and core for more control in heavy lifts.';
+      }
+      break;
+      
     default:
-      return 'No specific feedback available.';
+      feedback = 'Keep practicing with proper form and aim for continuous improvement!';
   }
+
+  switch (performance_category) {
+    case 'Beginner':
+      feedback += ' As a beginner, focus on mastering the basics and building a strong foundation.';
+      break;
+    case 'Intermediate':
+      feedback += ' As an intermediate lifter, work on refining your technique and increasing your strength.';
+      break;
+    case 'Advanced':
+      feedback += ' As an advanced lifter, focus on optimizing your performance and addressing any weaknesses.';
+      break;
+    default:
+      feedback += ' Keep up the good work and strive for continuous improvement!';
+  }
+
+  return feedback;
 };
 
 const styles = StyleSheet.create({
-  container: {
+  scrollContainer: {
+    flexGrow: 1,
     padding: 20,
+    backgroundColor: '#F5F5F5',
+  },
+  container: {
+    flex: 1,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noDataText: {
+    fontSize: 18,
+    color: 'gray',
   },
   header: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginVertical: 10,
+    marginBottom: 10,
+    color: '#007AFF',
   },
-  riskContainer: {
-    marginVertical: 5,
+  card: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+    marginBottom: 10,
+  },
+  analysisCard: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+    marginBottom: 10,
+  },
+  performanceCard: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+    marginBottom: 10,
+  },
+  infoText: {
+    fontSize: 13,
+    marginBottom: 5,
+  },
+  label: {
+    fontWeight: 'bold',
   },
   angleText: {
-    fontSize: 16,
+    fontSize: 15,
+    fontWeight: 'bold',
   },
   riskText: {
     fontSize: 16,
-    color: 'red',
   },
   feedbackText: {
     fontSize: 14,
     fontStyle: 'italic',
+    marginTop: 5,
+  },
+  performanceText: {
+    fontSize: 18,
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  riskContainer: {
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  predictedPerformanceContainer: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: '#f0f8ff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+    marginBottom: 15,
+  },
+  predictedPerformanceText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  performanceCategoryText: {
+    fontSize: 16,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
+  performanceScoreText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FF5733',
   },
 });
 
