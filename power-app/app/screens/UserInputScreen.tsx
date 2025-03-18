@@ -1,0 +1,206 @@
+import React, { useState } from "react";
+import { View, StyleSheet, Alert, ScrollView } from "react-native";
+import { TextInput, Button, Text, RadioButton } from "react-native-paper";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "../index";
+
+type NavigationProp = StackNavigationProp<RootStackParamList, "UserInput">;
+
+export default function UserInputScreen() {
+  const navigation = useNavigation<NavigationProp>();
+
+  const [userData, setUserData] = useState({
+    username: "",
+    age: "",
+    age_start: "",
+    yrs_experience: "",
+    sex_encoded: "1", // Default to Male
+    body_weight: "",
+    lifted_weight: "",
+  });
+
+  const handleInputChange = (key: string, value: string) => {
+    setUserData((prev) => {
+      let updatedData = { ...prev, [key]: value };
+
+      // Automatically calculate years of experience
+      if (key === "age" || key === "age_start") {
+        const age = parseInt(updatedData.age, 10);
+        const ageStart = parseInt(updatedData.age_start, 10);
+        if (!isNaN(age) && !isNaN(ageStart) && age > ageStart) {
+          updatedData.yrs_experience = (age - ageStart).toString();
+        } else {
+          updatedData.yrs_experience = "";
+        }
+      }
+
+      return updatedData;
+    });
+  }; 
+
+  const handleSubmit = () => {
+    if (!userData.username || !userData.age || !userData.age_start || !userData.body_weight || !userData.lifted_weight) {
+      Alert.alert("Error", "Please fill in all required fields.");
+      return;
+    }
+
+    console.log(" Sending User Data:", JSON.stringify(userData, null, 2));
+
+    // Navigate to PoseAnalysisScreen with user inputs
+    navigation.navigate("pose-analysis", { userData });
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Enter Your Details</Text>
+
+      {/* Username Input */}
+      <TextInput
+        label="Full Name"
+        value={userData.username}
+        onChangeText={(value) => handleInputChange("username", value)}
+        style={styles.input}
+        mode="outlined"
+        theme={{ colors: { primary: "#6200EE", background: "#FFF" } }}
+      />
+
+      {/* Age Input */}
+      <TextInput
+        label="Your Age"
+        value={userData.age}
+        onChangeText={(value) => handleInputChange("age", value)}
+        style={styles.input}
+        keyboardType="numeric"
+        mode="outlined"
+        theme={{ colors: { primary: "#6200EE", background: "#FFF" } }}
+      />
+
+      {/* Age Start Input */}
+      <TextInput
+        label="The Age You Started Weight Lifting"
+        value={userData.age_start}
+        onChangeText={(value) => handleInputChange("age_start", value)}
+        style={styles.input}
+        keyboardType="numeric"
+        mode="outlined"
+        theme={{ colors: { primary: "#6200EE", background: "#FFF" } }}
+      />
+
+      {/* Experience (Auto Calculated) */}
+      <TextInput
+        label="Years of Experience"
+        value={userData.yrs_experience}
+        style={styles.input}
+        editable={false} // Disable manual input
+        mode="outlined"
+        theme={{ colors: { primary: "#6200EE", background: "#FFF" } }}
+      />
+
+      {/* Gender Selection */}
+      <Text style={styles.radioTitle}>Select Gender</Text>
+      <View style={styles.radioGroup}>
+        <RadioButton.Item
+          label="Male"
+          value="1"
+          status={userData.sex_encoded === "1" ? "checked" : "unchecked"}
+          onPress={() => handleInputChange("sex_encoded", "1")}
+          color="#6200EE"
+          labelStyle={styles.radioLabel}
+        />
+        <RadioButton.Item
+          label="Female"
+          value="0"
+          status={userData.sex_encoded === "0" ? "checked" : "unchecked"}
+          onPress={() => handleInputChange("sex_encoded", "0")}
+          color="#6200EE"
+          labelStyle={styles.radioLabel}
+        />
+      </View>
+
+      {/* Body Weight Input */}
+      <TextInput
+        label="Body Weight (KG)"
+        value={userData.body_weight}
+        onChangeText={(value) => handleInputChange("body_weight", value)}
+        style={styles.input}
+        keyboardType="numeric"
+        mode="outlined"
+        theme={{ colors: { primary: "#6200EE", background: "#FFF" } }}
+      />
+
+      {/* Lifted Weight Input */}
+      <TextInput
+        label="Max Lifted Weight (KG)"
+        value={userData.lifted_weight}
+        onChangeText={(value) => handleInputChange("lifted_weight", value)}
+        style={styles.input}
+        keyboardType="numeric"
+        mode="outlined"
+        theme={{ colors: { primary: "#6200EE", background: "#FFF" } }}
+      />
+
+      {/* Submit Button */}
+      <Button
+        mode="contained"
+        onPress={handleSubmit}
+        style={styles.button}
+        labelStyle={styles.buttonLabel}
+      >
+        Submit
+      </Button>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    justifyContent: "center",
+    padding: 20,
+    backgroundColor: "#F5F5F5",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+    color: "#6200EE",
+  },
+  input: {
+    marginBottom: 15,
+    backgroundColor: "white",
+    borderRadius: 8,
+  },
+  radioTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 10,
+    marginBottom: 5,
+    color: "#333",
+  },
+  radioGroup: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 15,
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 10,
+    elevation: 2,
+  },
+  radioLabel: {
+    color: "#333",
+  },
+  button: {
+    marginTop: 20,
+    backgroundColor: "#6200EE",
+    borderRadius: 8,
+    paddingVertical: 8,
+    elevation: 2,
+  },
+  buttonLabel: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "white",
+  },
+});
