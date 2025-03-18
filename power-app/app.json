@@ -39,7 +39,10 @@
     "experiments": {
       "typedRoutes": true
     },
-    "assetBundlePatterns": ["**/*"]
+    "assetBundlePatterns": ["**/*"],
+"compilerOptions": {
+  "types": ["expo-av"]
+}
 
   }
 }

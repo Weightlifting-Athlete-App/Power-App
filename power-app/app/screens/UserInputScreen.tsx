@@ -4,6 +4,8 @@ import { TextInput, Button, Text, RadioButton } from "react-native-paper";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../index";
+import { FontAwesome5 } from "@expo/vector-icons";
+import LottieView from "lottie-react-native";
 
 type NavigationProp = StackNavigationProp<RootStackParamList, "UserInput">;
 
@@ -37,7 +39,7 @@ export default function UserInputScreen() {
 
       return updatedData;
     });
-  }; 
+  };
 
   const handleSubmit = () => {
     if (!userData.username || !userData.age || !userData.age_start || !userData.body_weight || !userData.lifted_weight) {
@@ -45,7 +47,7 @@ export default function UserInputScreen() {
       return;
     }
 
-    console.log(" Sending User Data:", JSON.stringify(userData, null, 2));
+    console.log("Sending User Data:", JSON.stringify(userData, null, 2));
 
     // Navigate to PoseAnalysisScreen with user inputs
     navigation.navigate("pose-analysis", { userData });
@@ -53,7 +55,18 @@ export default function UserInputScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Enter Your Details</Text>
+      {/* Lottie Animation */}
+      <LottieView
+        source={require("../../assets/animations/user.json")}
+        autoPlay
+        loop
+        style={styles.animation}
+      />
+
+      <Text style={styles.title}>Enter Your Details 💪</Text>
+      <Text style={styles.subtitle}>
+        Provide your information to analyze your posture and performance.
+      </Text>
 
       {/* Username Input */}
       <TextInput
@@ -62,7 +75,7 @@ export default function UserInputScreen() {
         onChangeText={(value) => handleInputChange("username", value)}
         style={styles.input}
         mode="outlined"
-        theme={{ colors: { primary: "#6200EE", background: "#FFF" } }}
+        theme={{ colors: { primary: "#007BFF", background: "#FFF" } }}
       />
 
       {/* Age Input */}
@@ -73,7 +86,7 @@ export default function UserInputScreen() {
         style={styles.input}
         keyboardType="numeric"
         mode="outlined"
-        theme={{ colors: { primary: "#6200EE", background: "#FFF" } }}
+        theme={{ colors: { primary: "#007BFF", background: "#FFF" } }}
       />
 
       {/* Age Start Input */}
@@ -84,7 +97,7 @@ export default function UserInputScreen() {
         style={styles.input}
         keyboardType="numeric"
         mode="outlined"
-        theme={{ colors: { primary: "#6200EE", background: "#FFF" } }}
+        theme={{ colors: { primary: "#007BFF", background: "#FFF" } }}
       />
 
       {/* Experience (Auto Calculated) */}
@@ -94,7 +107,7 @@ export default function UserInputScreen() {
         style={styles.input}
         editable={false} // Disable manual input
         mode="outlined"
-        theme={{ colors: { primary: "#6200EE", background: "#FFF" } }}
+        theme={{ colors: { primary: "#007BFF", background: "#FFF" } }}
       />
 
       {/* Gender Selection */}
@@ -105,7 +118,7 @@ export default function UserInputScreen() {
           value="1"
           status={userData.sex_encoded === "1" ? "checked" : "unchecked"}
           onPress={() => handleInputChange("sex_encoded", "1")}
-          color="#6200EE"
+          color="#007BFF"
           labelStyle={styles.radioLabel}
         />
         <RadioButton.Item
@@ -113,7 +126,7 @@ export default function UserInputScreen() {
           value="0"
           status={userData.sex_encoded === "0" ? "checked" : "unchecked"}
           onPress={() => handleInputChange("sex_encoded", "0")}
-          color="#6200EE"
+          color="#007BFF"
           labelStyle={styles.radioLabel}
         />
       </View>
@@ -126,7 +139,7 @@ export default function UserInputScreen() {
         style={styles.input}
         keyboardType="numeric"
         mode="outlined"
-        theme={{ colors: { primary: "#6200EE", background: "#FFF" } }}
+        theme={{ colors: { primary: "#007BFF", background: "#FFF" } }}
       />
 
       {/* Lifted Weight Input */}
@@ -137,18 +150,21 @@ export default function UserInputScreen() {
         style={styles.input}
         keyboardType="numeric"
         mode="outlined"
-        theme={{ colors: { primary: "#6200EE", background: "#FFF" } }}
+        theme={{ colors: { primary: "#007BFF", background: "#FFF" } }}
       />
 
       {/* Submit Button */}
-      <Button
-        mode="contained"
-        onPress={handleSubmit}
-        style={styles.button}
-        labelStyle={styles.buttonLabel}
-      >
-        Submit
-      </Button>
+      <View style={styles.buttonContainer}>
+        <Button
+          mode="contained"
+          onPress={handleSubmit}
+          style={styles.button}
+          labelStyle={styles.buttonText}
+          icon={() => <FontAwesome5 name="check" size={24} color="#fff" />}
+        >
+          Submit 
+        </Button>
+      </View>
     </ScrollView>
   );
 }
@@ -156,18 +172,29 @@ export default function UserInputScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    justifyContent: "center",
+    backgroundColor: "#f5f5f5",
+    alignItems: "center",
     padding: 20,
-    backgroundColor: "#F5F5F5",
+  },
+  animation: {
+    width: 200,
+    height: 200,
+    marginBottom: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "bold",
-    marginBottom: 20,
+    color: "#333",
     textAlign: "center",
-    color: "#6200EE",
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    marginVertical: 10,
   },
   input: {
+    width: "80%",
     marginBottom: 15,
     backgroundColor: "white",
     borderRadius: 8,
@@ -182,6 +209,7 @@ const styles = StyleSheet.create({
   radioGroup: {
     flexDirection: "row",
     justifyContent: "space-around",
+    width: "80%",
     marginBottom: 15,
     backgroundColor: "white",
     borderRadius: 8,
@@ -191,16 +219,37 @@ const styles = StyleSheet.create({
   radioLabel: {
     color: "#333",
   },
-  button: {
+  buttonContainer: {
+    width: "80%",
     marginTop: 20,
-    backgroundColor: "#6200EE",
-    borderRadius: 8,
-    paddingVertical: 8,
-    elevation: 2,
   },
-  buttonLabel: {
-    fontSize: 16,
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#007BFF",
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    justifyContent: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
     fontWeight: "bold",
-    color: "white",
+  },
+  buttonSecondary: {
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    borderColor: "#007BFF",
+    borderWidth: 2,
+  },
+  buttonTextSecondary: {
+    color: "#007BFF",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });

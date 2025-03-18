@@ -8,25 +8,29 @@ import {
   Dimensions,
   Modal,
   Pressable,
-  Animated,
-  Easing,
+  ScrollView,
 } from "react-native";
-import { Button, Card } from "react-native-paper";
-import { CameraView, useCameraPermissions, useMicrophonePermissions, PermissionStatus } from "expo-camera";
+import { Button } from "react-native-paper";
+import {
+  CameraView,
+  useCameraPermissions,
+  useMicrophonePermissions,
+  PermissionStatus,
+} from "expo-camera";
 import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
 import axios from "axios";
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import LottieView from "lottie-react-native";
+import { Audio } from "expo-av";
 
-// Define the navigation stack param list
+const { width, height } = Dimensions.get("window");
+
 type RootStackParamList = {
   PoseAnalysisScreen: { userData: any };
-  ResultsScreen: {
-    username: string;
-    performance: number;
-    category: string;
-  };
+  ResultsScreen: { username: string; performance: number; category: string };
 };
 
 type PoseAnalysisScreenRouteProp = RouteProp<RootStackParamList, "PoseAnalysisScreen">;
@@ -54,8 +58,6 @@ interface Props {
   navigation: PoseAnalysisScreenNavigationProp;
 }
 
-const { width, height } = Dimensions.get("window");
-
 export default function PoseAnalysisScreen({ route, navigation }: Props) {
   const { userData: initialUserData } = route.params || {};
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
@@ -66,11 +68,12 @@ export default function PoseAnalysisScreen({ route, navigation }: Props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalData, setModalData] = useState<VideoResponse["data"] | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [videoResult, setVideoResult] = useState<any>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [recordingTime, setRecordingTime] = useState<number>(0);
-  const countdownAnimation = useRef(new Animated.Value(0)).current;
-  const [recordedVideoUri, setRecordedVideoUri] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [jointAngles, setJointAngles] = useState<{ [key: string]: number }>({});
+  const [showCamera, setShowCamera] = useState(true);
+  
 
   useEffect(() => {
     const requestPermissions = async () => {
@@ -81,430 +84,390 @@ export default function PoseAnalysisScreen({ route, navigation }: Props) {
         Alert.alert("Permission Error", "Camera permission is required.");
       }
       if (micResponse.status !== PermissionStatus.GRANTED) {
-        Alert.alert(
-          "Permission Warning",
-          "Microphone permission is optional; recording will be muted if denied."
-        );
+        Alert.alert("Permission Warning", "Microphone permission is optional.");
       }
     };
     requestPermissions();
   }, [requestCameraPermission, requestMicPermission]);
 
-  const canRecord = () => {
-    if (!cameraPermission?.granted) {
-      Alert.alert("Permission Required", "Camera permission is required.");
-      return false;
-    }
-    return true;
-  };
+  const canRecord = () => cameraPermission?.granted;
 
-  const startCountdown = () => {
-    setCountdown(3);
-    Animated.timing(countdownAnimation, {
-      toValue: 1,
-      duration: 3000,
-      easing: Easing.linear,
-      useNativeDriver: true,
-    }).start(() => {
-      setCountdown(null);
-      startRecording();
-    });
-  };
-
-const startRecording = async () => {
-  if (!cameraRef.current) {
-    Alert.alert("Error", "Camera not available.");
-    return;
-  }
-  if (!canRecord()) {
-    return;
-  }
-
-  setLoading(true);
-  setIsRecording(true);
-  setRecordingTime(0);
-
-  const interval = setInterval(() => {
-    setRecordingTime((prev) => prev + 1);
-  }, 1000);
-
-  try {
-    // Start recording and get the video URI
-    const video = await cameraRef.current.recordAsync({
-      maxDuration: 45,
-    });
-
-    if (video && video.uri) {
-      console.log("🎥 Recorded video URI:", video.uri);
-
-      // Process the video
-      await processVideo(video.uri);
-    } else {
-      Alert.alert("Error", "Failed to record video.");
-    }
-  } catch (error) {
-    console.error("Recording Error:", error);
-    const errorMessage = (error as Error).message || "Unknown error";
-    Alert.alert("Error", `Failed to record video: ${errorMessage}`);
-  } finally {
-    clearInterval(interval);
-    setLoading(false);
-    setIsRecording(false);
-  }
-};
-
-
-// Callback when recording ends
-const handleRecordingEnd = ({ uri }: { uri: string }) => {
-  console.log("🎥 Recorded video URI:", uri);
-  setRecordedVideoUri(uri); // Store the video URI
-};
-const stopRecording = async () => {
-  if (cameraRef.current && isRecording) {
+  const playBeepSound = async () => {
     try {
-      setIsRecording(false); // Stop recording
-      setLoading(true); // Show loading indicator
-      setCountdown(null); // Reset the countdown
+      const { sound } = await Audio.Sound.createAsync(require("../../assets/sounds/beep.wav"));
+      await sound.playAsync();
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) sound.unloadAsync();
+      });
+    } catch (error) {
+      console.error("Beep Sound Error:", error);
+    }
+  };
 
-      // Stop the recording
-      await cameraRef.current.stopRecording();
+  const startCountdown = async () => {
+    if (!canRecord()) {
+      Alert.alert("Permission Required", "Camera permission is required.");
+      return;
+    }
+
+    setCountdown(3);
+    for (let i = 3; i >= 0; i--) {
+      await playBeepSound();
+      setCountdown(i);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    setCountdown(null);
+    startRecording();
+  };
+
+  const startRecording = async () => {
+    if (!cameraRef.current || isRecording) return;
+
+    setIsRecording(true);
+    setRecordingTime(0);
+    setShowCamera(true);
+
+    const interval = setInterval(() => {
+      setRecordingTime((prev) => {
+        if (prev >= 20) {
+          clearInterval(interval);
+          stopRecording();
+          return 20;
+        }
+        return prev + 1;
+      });
+    }, 1000);
+
+    try {
+      const video = await cameraRef.current.recordAsync({ maxDuration: 20 });
+      if (video?.uri) {
+        setShowCamera(false);
+        await processVideo(video.uri);
+      } else {
+        Alert.alert("Error", "Failed to record video.");
+      }
     } catch (error) {
       console.error("Recording Error:", error);
-      const errorMessage = (error as Error).message || "Unknown error";
-      Alert.alert("Error", `Failed to stop recording: ${errorMessage}`);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      Alert.alert("Error", `Failed to record video: ${errorMessage}`);
     } finally {
-      setLoading(false); // Hide loading indicator
+      clearInterval(interval);
+      setIsRecording(false);
     }
-  }
-};
+  };
 
-const processVideo = async (uri: string) => {
-  try {
+  const stopRecording = () => {
+    if (cameraRef.current && isRecording) {
+      cameraRef.current.stopRecording();
+    }
+  };
+
+  const processVideo = async (uri: string) => {
     setProcessingMessage("Processing video, please wait...");
+    setLoading(true);
+    try {
+      const videoBase64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
 
-    // Convert the video file to base64
-    const videoBase64 = await fetch(uri)
-      .then((res) => res.blob())
-      .then((blob) =>
-        new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            if (typeof reader.result === "string") {
-              resolve(reader.result.split(",")[1]); // Extract base64 data
-            } else {
-              resolve(null);
-            }
-          };
-          reader.readAsDataURL(blob);
-        })
+      if (!videoBase64) throw new Error("Failed to convert video to base64");
+
+      const response = await axios.post<VideoResponse>(
+        "http://192.168.198.43:5000/process_video",
+        {
+          video: videoBase64,
+          user_data: initialUserData || {
+            username: "athlete02",
+            age: 32,
+            age_start: 15,
+            yrs_experience: 17,
+            sex_encoded: 1,
+            body_weight: 75,
+            lifted_weight: 150,
+          },
+        },
+        { headers: { "Content-Type": "application/json" } }
       );
 
-    if (!videoBase64) {
-      throw new Error("Failed to convert video to base64.");
+      const data = response.data.data;
+      setModalData(data);
+      await submitUserDataWithAngles(data);
+      setModalVisible(true);
+    } catch (error) {
+      console.error("Video Processing Error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      Alert.alert("Error", `Failed to process video: ${errorMessage}`);
+    } finally {
+      setProcessingMessage(null);
+      setLoading(false);
     }
-
-    console.log("📤 Sending Video for Processing...");
-
-    // Send the video to the backend for processing
-    const response = await axios.post<VideoResponse>(
-      "http://172.28.8.78:5000/process_video",
-      {
-        video: videoBase64,
-        user_data: initialUserData || {
-          username: "athlete02",
-          age: 32,
-          age_start: 15,
-          yrs_experience: 17,
-          sex_encoded: 1,
-          body_weight: 75,
-          lifted_weight: 150,
-        },
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.data || !response.data.data || !response.data.data.video_result) {
-      throw new Error("Invalid response from server: Missing video_result");
-    }
-
-    // Set the video result and show the modal
-    setVideoResult(response.data.data);
-    setModalData(response.data.data);
-    setProcessingMessage(null);
-
-    // Show the results in an alert
-    Alert.alert(
-      "Video Processed",
-      `Prediction: ${response.data.data.video_result.overall_prediction}\nTechnique: ${response.data.data.video_result.technique_feedback}\nPerformance: ${response.data.data.performance_category}`
-    );
-
-    // Submit user data with angles
-    await submitUserDataWithAngles(response.data.data);
-    setProcessingMessage(null);
-
-    // Navigate to the results screen
-    navigation.navigate("ResultsScreen", {
-      username: response.data.data.username || "athlete02",
-      performance: response.data.data.predicted_performance,
-      category: response.data.data.performance_category,
-    });
-  } catch (error) {
-    console.error("Video Processing Error:", error);
-    const errorMessage = (error as any).message || "Unknown error";
-    Alert.alert("Error", `Failed to process video: ${errorMessage}`);
-    setProcessingMessage(null);
-  }
-};
+  };
 
   const submitUserDataWithAngles = async (videoData: VideoResponse["data"]) => {
-    setLoading(true);
-    setProcessingMessage("Submitting performance data...");
     try {
       const userDataWithAngles = {
-        username: initialUserData?.username || "Ashan",
+        username: initialUserData?.username || "athlete02",
         age: initialUserData?.age || 32,
         age_start: initialUserData?.age_start || 15,
         yrs_experience: initialUserData?.yrs_experience || 17,
         sex_encoded: initialUserData?.sex_encoded || 1,
         body_weight: initialUserData?.body_weight || 75,
         lifted_weight: initialUserData?.lifted_weight || 150,
-        pose_data: {
-          angles: videoData.pose_data.angles,
-        },
+        pose_data: { angles: videoData.pose_data.angles },
       };
 
-      const response = await axios.post<VideoResponse>(
-        "http://172.28.8.78:5000/submit_user_data",
-        userDataWithAngles,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      Alert.alert(
-        "Performance Submitted",
-        `Performance: ${response.data.data.performance_category}`
-      );
+      await axios.post("http://192.168.198.43:5000/submit_user_data", userDataWithAngles, {
+        headers: { "Content-Type": "application/json" },
+      });
     } catch (error) {
       console.error("Submit User Data Error:", error);
-      const errorMessage = (error as any).message || "Unknown error";
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
       Alert.alert("Error", `Failed to submit user data: ${errorMessage}`);
-    } finally {
-      setLoading(false);
-      setProcessingMessage(null);
     }
   };
 
   const uploadVideo = async () => {
     const result = await DocumentPicker.getDocumentAsync({ type: "video/*" });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
+    if (!result.canceled && result.assets?.length > 0) {
       const uri = result.assets[0].uri;
-      setLoading(true);
       await processVideo(uri);
-      setLoading(false);
     } else {
       Alert.alert("Error", "Video selection canceled.");
     }
   };
 
-  const testSubmitUserData = async () => {
-    await submitUserDataWithAngles({
-      video_result: { overall_prediction: "N/A", technique_feedback: "N/A", label_percentages: {} },
-      performance_category: "N/A",
-      predicted_performance: 0,
-      pose_data: {
-        angles: {
-          shoulder_angle: 160,
-          knees_angle: 110,
-          back_angle: 20,
-          wrist_angle: 170,
-          hips_angle: 95,
-        },
-      },
-    });
-  };
+  // Mock joint angles for live display when camera is active
+  useEffect(() => {
+    if (!showCamera || isRecording) return; // Only show angles when camera is previewing
+    const mockAngles = () => {
+      setJointAngles({
+        shoulder_angle: Math.random() * 180,
+        knees_angle: Math.random() * 180,
+        back_angle: Math.random() * 180,
+        wrist_angle: Math.random() * 180,
+        hips_angle: Math.random() * 180,
+      });
+    };
+    const interval = setInterval(mockAngles, 1000);
+    return () => clearInterval(interval);
+  }, [showCamera, isRecording]);
 
- return (
-  <View style={styles.container}>
-    <CameraView
-  style={styles.camera}
-  facing="back"
-  ref={cameraRef}
-/>
-    {countdown !== null && (
-      <View style={styles.countdownContainer}>
-        <Animated.Text style={[styles.countdownText, { opacity: countdownAnimation }]}>
-          {countdown}
-        </Animated.Text>
-      </View>
-    )}
-    {isRecording && (
-      <View style={styles.recordingTimeContainer}>
-        <Text style={styles.recordingTimeText}>{recordingTime}s</Text>
-      </View>
-    )}
-    <View style={styles.buttonContainer}>
-      <Button
-        mode="contained"
-        onPress={isRecording ? stopRecording : startCountdown}
-        style={styles.captureButton}
-        disabled={loading}
-      >
-        <Ionicons
-          name={isRecording ? "stop-outline" : "videocam-outline"}
-          size={18}
-          color="white"
-        />
-        {isRecording ? " Stop Recording" : " Start Recording"}
-      </Button>
-      <Button
-        mode="contained"
-        onPress={uploadVideo}
-        style={styles.uploadButton}
-        disabled={loading}
-      >
-        <Ionicons name="cloud-upload-outline" size={18} color="white" />{" "}
-        Upload Video
-      </Button>
-      <Button
-        mode="contained"
-        onPress={testSubmitUserData}
-        style={styles.testButton}
-        disabled={loading}
-      >
-        <Ionicons name="pulse-outline" size={18} color="white" /> Test
-        Performance
-      </Button>
-    </View>
-    {loading && (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007BFF" />
-        {processingMessage && (
-          <Text style={styles.processingText}>{processingMessage}</Text>
-        )}
-      </View>
-    )}
-    {videoResult && (
-      <Card style={styles.resultCard}>
-        <Card.Content>
-          <Text style={styles.resultTitle}>Video Analysis Results</Text>
-          <Text style={styles.resultText}>
-            Prediction: {videoResult.video_result.overall_prediction}
-          </Text>
-          <Text style={styles.resultText}>
-            Technique: {videoResult.video_result.technique_feedback}
-          </Text>
-          <Text style={styles.resultText}>
-            Performance: {videoResult.performance_category}
-          </Text>
-          <Text style={styles.resultText}>
-            Score: {videoResult.predicted_performance.toFixed(2)}
-          </Text>
-          <Text style={styles.angleTitle}>Average Angles</Text>
-          {Object.entries(videoResult.pose_data.angles).map(
-            ([key, value]) => (
-              <Text key={key} style={styles.angleText}>
-                {key.replace("_angle", "").replace("_", " ")}:{" "}
-                {(value as number).toFixed(2)}°
-              </Text>
-            )
-          )}
-          <Text style={styles.angleTitle}>Class Percentages</Text>
-          {Object.entries(videoResult.video_result.label_percentages).map(
-            ([label, percentage]) => (
-              <Text key={label} style={styles.angleText}>
-                {label}: {(percentage as number).toFixed(2)}%
-              </Text>
-            )
-          )}
-        </Card.Content>
-      </Card>
-    )}
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <LottieView
+        source={require("../../assets/animations/record.json")}
+        autoPlay
+        loop
+        style={styles.animation}
+      />
 
-    {/* Live Result Dialog */}
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={modalVisible}
-      onRequestClose={() => setModalVisible(false)}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          {modalData ? (
+      <Text style={styles.title}>Pose Analysis</Text>
+      <Text style={styles.subtitle}>
+        Record or upload a video to analyze your lifting technique.
+      </Text>
+
+      {!isUploading ? (
+        <>
+          {showCamera && (
             <>
-              <Text style={styles.modalTitle}>🏋️ Video Processed!</Text>
-              <Text style={styles.modalText}>🔹 Lift Type: {modalData?.video_result?.overall_prediction}</Text>
-              <Text style={styles.modalText}>🔹 Technique: {modalData?.video_result?.technique_feedback}</Text>
-              <Text style={styles.modalText}>🔹 Performance: {modalData?.performance_category}</Text>
-              <Text style={styles.modalText}>🔹 Score: {modalData?.predicted_performance?.toFixed(2)}</Text>
-              <Pressable style={styles.okButton} onPress={() => setModalVisible(false)}>
-                <Text style={styles.okButtonText}>OK</Text>
-              </Pressable>
+              <CameraView style={styles.camera} facing="back" ref={cameraRef} />
+              {!isRecording && (
+                <View style={styles.anglesContainer}>
+                  {Object.entries(jointAngles).map(([key, value]) => (
+                    <Text key={key} style={styles.angleText}>
+                      {key.replace("_angle", "")}: {value.toFixed(1)}°
+                    </Text>
+                  ))}
+                </View>
+              )}
+              {countdown !== null && (
+                <View style={styles.countdownContainer}>
+                  <Text style={styles.countdownText}>{countdown}</Text>
+                </View>
+              )}
+              {isRecording && (
+                <View style={styles.recordingTimeContainer}>
+                  <Text style={styles.recordingTimeText}>{recordingTime}s</Text>
+                </View>
+              )}
             </>
-          ) : (
-            <ActivityIndicator size="large" color="#007BFF" />
           )}
+          <View style={styles.buttonContainer}>
+            <Button
+              mode="contained"
+              onPress={startCountdown}
+              style={styles.button}
+              disabled={loading || isRecording}
+              icon={() => <FontAwesome5 name="video" size={24} color="#fff" />}
+              labelStyle={styles.buttonText}
+            >
+              Record
+            </Button>
+            <Button
+              mode="contained"
+              onPress={() => setIsUploading(true)}
+              style={styles.buttonSecondary}
+              disabled={loading}
+              labelStyle={styles.buttonTextSecondary}
+            >
+              Upload
+            </Button>
+          </View>
+        </>
+      ) : (
+        <View style={styles.uploadContainer}>
+          <Text style={styles.uploadTitle}>Upload Video</Text>
+          <LottieView
+            source={require("../../assets/animations/upload.json")}
+            autoPlay
+            loop
+            style={styles.uploadAnimation}
+          />
+          <Button
+            mode="contained"
+            onPress={uploadVideo}
+            style={styles.button}
+            disabled={loading}
+            icon={() => <FontAwesome5 name="cloud-upload-alt" size={24} color="#fff" />}
+            labelStyle={styles.buttonText}
+          >
+            Select Video
+          </Button>
+          <Button
+            mode="outlined"
+            onPress={() => setIsUploading(false)}
+            style={styles.buttonSecondary}
+            labelStyle={styles.buttonTextSecondary}
+          >
+            Back
+          </Button>
         </View>
-      </View>
-    </Modal>
-  </View>
-);
+      )}
+
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007BFF" />
+          {processingMessage && <Text style={styles.processingText}>{processingMessage}</Text>}
+        </View>
+      )}
+
+      <Modal animationType="slide" transparent={true} visible={modalVisible}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {modalData ? (
+              <>
+                <Text style={styles.modalTitle}>🏋️ Video Processed!</Text>
+                <Text style={styles.modalText}>🔹 Lift Type: {modalData.video_result.overall_prediction}</Text>
+                <Text style={styles.modalText}>🔹 Technique: {modalData.video_result.technique_feedback}</Text>
+                <Text style={styles.modalText}>🔹 Performance: {modalData.performance_category}</Text>
+                <Text style={styles.modalText}>🔹 Score: {modalData.predicted_performance.toFixed(2)}</Text>
+                <Pressable
+                  style={styles.okButton}
+                  onPress={() => {
+                    setModalVisible(false);
+                    navigation.navigate("ResultsScreen", {
+                      username: modalData.username || "Ashan",
+                      performance: modalData.predicted_performance,
+                      category: modalData.performance_category,
+                    });
+                  }}
+                >
+                  <Text style={styles.okButtonText}>OK</Text>
+                </Pressable>
+              </>
+            ) : (
+              <ActivityIndicator size="large" color="#007BFF" />
+            )}
+          </View>
+        </View>
+      </Modal>
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#F8F9FA",
+    flexGrow: 1,
+    backgroundColor: "#f5f5f5",
     alignItems: "center",
-    justifyContent: "center",
+    padding: 20,
+  },
+  animation: {
+    width: 200,
+    height: 200,
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    marginVertical: 10,
   },
   camera: {
-    width: "100%",
+    width: "80%",
     height: height * 0.5,
     borderRadius: 10,
     overflow: "hidden",
+    marginBottom: 20,
+  },
+  anglesContainer: {
+    position: "absolute",
+    top: 20,
+    left: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    padding: 10,
+    borderRadius: 5,
+  },
+  angleText: {
+    fontSize: 14,
+    color: "#fff",
+    fontWeight: "bold",
   },
   buttonContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-around",
-    width: "100%",
-    marginTop: 20,
-    paddingHorizontal: 10,
+    width: "80%",
+    flexDirection: "column",
+    alignItems: "center",
   },
-  captureButton: {
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#007BFF",
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    width: "100%",
+    justifyContent: "center",
   },
-  uploadButton: {
-    backgroundColor: "#28A745",
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
-  testButton: {
-    backgroundColor: "#FFC107",
-    flexDirection: "row",
+  buttonSecondary: {
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    width: "100%",
+    justifyContent: "center",
     alignItems: "center",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
+    borderColor: "#007BFF",
+    borderWidth: 2,
+  },
+  buttonTextSecondary: {
+    color: "#007BFF",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   loadingContainer: {
     position: "absolute",
-    top: height * 0.25,
+    top: "40%",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -514,58 +477,18 @@ const styles = StyleSheet.create({
     color: "#007BFF",
     textAlign: "center",
   },
-  resultCard: {
-    marginTop: 20,
-    backgroundColor: "#FFF",
-    width: "90%",
-    padding: 15,
-    borderRadius: 10,
-    elevation: 3,
-  },
-  resultTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-    color: "#444",
-    marginBottom: 10,
-  },
-  resultText: {
-    fontSize: 16,
-    textAlign: "center",
-    color: "#555",
-    marginVertical: 2,
-  },
-  angleTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-    color: "#444",
-    marginTop: 10,
-    marginBottom: 5,
-  },
-  angleText: {
-    fontSize: 14,
-    textAlign: "center",
-    color: "#555",
-    marginVertical: 2,
-  },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Transparent overlay
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     width: "80%",
-    backgroundColor: "white",
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
   },
   modalTitle: {
     fontSize: 20,
@@ -576,41 +499,58 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 16,
     marginBottom: 5,
-    color: "#555",
+    color: "#666",
   },
   okButton: {
     marginTop: 15,
-    backgroundColor: "#28A745",
+    backgroundColor: "#007BFF",
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 5,
+    borderRadius: 10,
   },
   okButtonText: {
     fontSize: 16,
-    color: "white",
+    color: "#fff",
     fontWeight: "bold",
   },
   countdownContainer: {
     position: "absolute",
-    top: height * 0.25,
+    top: "40%",
     alignItems: "center",
     justifyContent: "center",
   },
   countdownText: {
     fontSize: 48,
     fontWeight: "bold",
-    color: "#FFF",
+    color: "#fff",
   },
   recordingTimeContainer: {
     position: "absolute",
     top: 20,
     right: 20,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
     padding: 10,
     borderRadius: 5,
   },
   recordingTimeText: {
     fontSize: 16,
-    color: "#FFF",
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  uploadContainer: {
+    width: "80%",
+    alignItems: "center",
+  },
+  uploadTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  uploadAnimation: {
+    width: 150,
+    height: 150,
+    marginBottom: 20,
   },
 });
