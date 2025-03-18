@@ -3,23 +3,23 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import LoginScreen from "./screens/LoginScreen";
 import SignUpScreen from "./screens/SignUpScreen";
-import UserInputScreen from "./screens/UserInputScreen";
-import PoseAnalysisScreen from "./screens/PoseAnalysisScreen";
-import ResultsScreen from "./screens/ResultsScreen";
-import HomeScreen from "./screens/HomeScreen";
+import ExerciseDetailsScreen from "./screens/ExerciseDetailsScreen";
+import ExerciseDetailsScreen2 from "./screens/ExerciseDetailsScreen2";
+import ExerciseDetailsScreen3 from "./screens/ExerciseDetailsScreen3";
+import Models3D from "./screens/Models3D";
+import Generatefeedback from "./screens/Generatefeedback";
+import Feedback from "./screens/Feedback";
 
-//  Define Stack Type
+// Define Stack Type
 export type RootStackParamList = {
   Login: undefined;
   SignUp: undefined;
-  UserInput: undefined;
-  "pose-analysis": { userData: any };
-ResultsScreen: {
-    username: string;
-    performance: number;
-    category: string;
-  };
-  homePage: undefined;
+  ExerciseDetail: undefined;
+  ExerciseDetail2: undefined;
+  ExerciseDetail3: undefined;
+  Models3D: undefined;
+  Generatefeedback: undefined;
+  Feedback: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -27,13 +27,15 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="Feedback">
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
-        <Stack.Screen name="UserInput" component={UserInputScreen} />
-        <Stack.Screen name="pose-analysis" component={PoseAnalysisScreen} />
-         <Stack.Screen name="ResultsScreen" component={ResultsScreen}/>
-        <Stack.Screen name="homePage" component={HomeScreen} />
+        <Stack.Screen name="ExerciseDetail" component={ExerciseDetailsScreen} />
+        <Stack.Screen name="ExerciseDetail2" component={ExerciseDetailsScreen2} />
+        <Stack.Screen name="ExerciseDetail3" component={ExerciseDetailsScreen3} />
+        <Stack.Screen name="Models3D" component={Models3D} />
+        <Stack.Screen name="Generatefeedback" component={Generatefeedback} />
+        <Stack.Screen name="Feedback" component={Feedback} />
       </Stack.Navigator>
     </NavigationContainer>
   );
