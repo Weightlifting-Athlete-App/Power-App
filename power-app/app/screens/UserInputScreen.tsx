@@ -51,6 +51,7 @@ export default function UserInputScreen() {
 
     // Navigate to PoseAnalysisScreen with user inputs
     navigation.navigate("pose-analysis", { userData });
+
   };
 
   return (

@@ -7,6 +7,7 @@ import UserInputScreen from "./screens/UserInputScreen";
 import PoseAnalysisScreen from "./screens/PoseAnalysisScreen";
 import ResultsScreen from "./screens/ResultsScreen";
 import HomeScreen from "./screens/HomeScreen";
+import OverallRecordsScreen from "./screens/OverallRecordsScreen";
 
 //  Define Stack Type
 export type RootStackParamList = {
@@ -20,6 +21,7 @@ ResultsScreen: {
     category: string;
   };
   homePage: undefined;
+  overallResults: { username: string };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -33,6 +35,7 @@ export default function App() {
         <Stack.Screen name="UserInput" component={UserInputScreen} />
         <Stack.Screen name="pose-analysis" component={PoseAnalysisScreen} />
          <Stack.Screen name="ResultsScreen" component={ResultsScreen}/>
+         <Stack.screen name="overallResults" component={OverallRecordsScreen}/>
         <Stack.Screen name="homePage" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>

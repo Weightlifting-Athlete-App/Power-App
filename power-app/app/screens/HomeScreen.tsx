@@ -36,7 +36,7 @@ export default function HomeScreen() {
         style={styles.buttonSecondary}
         onPress={() => navigation.navigate("Login")} // Use navigation.navigate
       >
-        <Text style={styles.buttonTextSecondary}>Login</Text>
+        <Text style={styles.buttonTextSecondary}>LogOut</Text>
       </TouchableOpacity>
     </View>
   );

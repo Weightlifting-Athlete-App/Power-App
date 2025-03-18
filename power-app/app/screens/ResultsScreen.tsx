@@ -107,7 +107,7 @@ export default function ResultsScreen() {
       <View style={styles.progressBar}>
         <View style={[styles.progressBarFill, { width: `${value}%`, backgroundColor: color }]} />
       </View>
-      <Text style={styles.progressBarValue}>{value}%</Text>
+      <Text style={styles.progressBarValue}>{value.toFixed(2)}%</Text>
     </View>
   );
 
@@ -143,7 +143,7 @@ export default function ResultsScreen() {
               fontSize={12}
               textAnchor="middle"
             >
-              {item.value}°
+              {item.value.toFixed(2)}°
             </SvgText>
           </G>
         ))}
@@ -155,6 +155,7 @@ export default function ResultsScreen() {
   const PieChart = ({ data }) => {
     const total = data.reduce((sum, item) => sum + item.value, 0);
     let startAngle = 0;
+    const colors = ["#4c669f", "#3b5998", "#192f6a", "#28A745", "#FFC107"];
 
     return (
       <Svg width="100%" height={200}>
@@ -170,14 +171,26 @@ export default function ResultsScreen() {
 
           const path = `M100,100 L${x1},${y1} A80,80 0 ${largeArcFlag},1 ${x2},${y2} Z`;
 
+          // Calculate label position (midpoint of the arc)
+          const labelAngle = startAngle + angle / 2;
+          const labelX = 100 + 50 * Math.cos((Math.PI * labelAngle) / 180);
+          const labelY = 100 + 50 * Math.sin((Math.PI * labelAngle) / 180);
+
           startAngle = endAngle;
 
           return (
-            <Path
-              key={index}
-              d={path}
-              fill={["#4c669f", "#3b5998", "#192f6a", "#28A745", "#FFC107"][index]}
-            />
+            <G key={index}>
+              <Path d={path} fill={colors[index]} />
+              <SvgText
+                x={labelX}
+                y={labelY}
+                fill="#fff"
+                fontSize={12}
+                textAnchor="middle"
+              >
+                {item.angle}
+              </SvgText>
+            </G>
           );
         })}
       </Svg>
@@ -225,8 +238,49 @@ export default function ResultsScreen() {
         <ProgressBar
           label="Performance Score"
           value={performanceData?.predicted_performance || 0}
-          color="#007BFF" // Changed to match HomeScreen theme
+          color="#007BFF"
         />
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>Lift Type:</Text>
+          <Text style={styles.summaryValue}>{performanceData.video_result?.overall_prediction || "N/A"}</Text>
+        </View>
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>Technique:</Text>
+          <Text style={styles.summaryValue}>{performanceData.video_result?.technique_feedback || "N/A"}</Text>
+        </View>
+      </View>
+
+      {/* Fatigue Analysis */}
+      <View style={styles.summaryCard}>
+        <Text style={styles.summaryTitle}>Fatigue Analysis</Text>
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>Fatigue Level:</Text>
+          <Text style={styles.summaryValue}>{performanceData.fatigue_result?.fatigue_level || "N/A"}</Text>
+        </View>
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>Confidence:</Text>
+          <Text style={styles.summaryValue}>
+            {performanceData.fatigue_result?.confidence_score
+              ? `${performanceData.fatigue_result.confidence_score.toFixed(2)}%`
+              : "N/A"}
+          </Text>
+        </View>
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>Timestamp:</Text>
+          <Text style={styles.summaryValue}>{performanceData.fatigue_result?.timestamp || "N/A"}</Text>
+        </View>
+        <Text style={styles.fatigueRecommendation}>
+          Recommendation: {performanceData.fatigue_result?.recommendation || "No recommendation available."}
+        </Text>
+        <Text style={styles.fatigueInsight}>
+          {performanceData.fatigue_result?.fatigue_level === "Moderate"
+            ? "Your fatigue level suggests you're still performing well, but rest intervals could optimize recovery."
+            : performanceData.fatigue_result?.fatigue_level === "High"
+            ? "High fatigue detected. Consider a longer rest period to prevent overtraining."
+            : performanceData.fatigue_result?.fatigue_level === "Low"
+            ? "Low fatigue indicates you're in peak condition for training!"
+            : "No fatigue data available to provide insights."}
+        </Text>
       </View>
 
       {/* Bar Chart */}
@@ -252,9 +306,9 @@ export default function ResultsScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.buttonSecondary}
-          onPress={() => navigation.navigate("UserInput")}
+          onPress={() => navigation.navigate("overallResults", { username })}
         >
-          <Text style={styles.buttonTextSecondary}>New Analysis</Text>
+          <Text style={styles.buttonTextSecondary}>Overrall Analysis</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -389,5 +443,17 @@ const styles = StyleSheet.create({
     color: "#007BFF",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  fatigueRecommendation: {
+    fontSize: 16,
+    color: "#007BFF",
+    marginTop: 10,
+    fontWeight: "bold",
+  },
+  fatigueInsight: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 5,
+    textAlign: "justify",
   },
 });

@@ -30,12 +30,15 @@ const { width, height } = Dimensions.get("window");
 
 type RootStackParamList = {
   PoseAnalysisScreen: { userData: any };
-  ResultsScreen: { username: string; performance: number; category: string };
+  ResultsScreen: { username: string; performance: number; category: string; fatigueLevel: string; fatigueRecommendation: string };
 };
 
 type PoseAnalysisScreenRouteProp = RouteProp<RootStackParamList, "PoseAnalysisScreen">;
 type PoseAnalysisScreenNavigationProp = StackNavigationProp<RootStackParamList, "PoseAnalysisScreen">;
 
+
+
+// Update VideoResponse interface to reflect native Python types (not strictly necessary but for clarity)
 interface VideoResponse {
   data: {
     video_result: {
@@ -44,9 +47,16 @@ interface VideoResponse {
       label_percentages: { [key: string]: number };
     };
     performance_category: string;
-    predicted_performance: number;
+    predicted_performance: number;  // Already a number, no NumPy type expected
     pose_data: {
       angles: { [key: string]: number };
+    };
+    fatigue_result: {
+      fatigue_level: string;
+      recommendation: string;
+      fatigue_label: number;  // Changed to number from np.int64
+      confidence_score?: number;
+      timestamp?: string;
     };
     _id?: string;
     username?: string;
@@ -162,46 +172,47 @@ export default function PoseAnalysisScreen({ route, navigation }: Props) {
     }
   };
 
-  const processVideo = async (uri: string) => {
-    setProcessingMessage("Processing video, please wait...");
-    setLoading(true);
-    try {
-      const videoBase64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+// Update processVideo function to handle fatigue data
+const processVideo = async (uri: string) => {
+  setProcessingMessage("Processing video, please wait...");
+  setLoading(true);
+  try {
+    const videoBase64 = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
 
-      if (!videoBase64) throw new Error("Failed to convert video to base64");
+    if (!videoBase64) throw new Error("Failed to convert video to base64");
 
-      const response = await axios.post<VideoResponse>(
-        "http://192.168.198.43:5000/process_video",
-        {
-          video: videoBase64,
-          user_data: initialUserData || {
-            username: "athlete02",
-            age: 32,
-            age_start: 15,
-            yrs_experience: 17,
-            sex_encoded: 1,
-            body_weight: 75,
-            lifted_weight: 150,
-          },
+    const response = await axios.post<VideoResponse>(
+      "http://192.168.198.43:5000/process_video",
+      {
+        video: videoBase64,
+        user_data: initialUserData || {
+          username: "athlete02",
+          age: 32,
+          age_start: 15,
+          yrs_experience: 17,
+          sex_encoded: 1,
+          body_weight: 75,
+          lifted_weight: 150,
         },
-        { headers: { "Content-Type": "application/json" } }
-      );
+      },
+      { headers: { "Content-Type": "application/json" } }
+    );
 
-      const data = response.data.data;
-      setModalData(data);
-      await submitUserDataWithAngles(data);
-      setModalVisible(true);
-    } catch (error) {
-      console.error("Video Processing Error:", error);
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      Alert.alert("Error", `Failed to process video: ${errorMessage}`);
-    } finally {
-      setProcessingMessage(null);
-      setLoading(false);
-    }
-  };
+    const data = response.data.data;
+    setModalData(data); // This now includes fatigue_result
+    await submitUserDataWithAngles(data);
+    setModalVisible(true);
+  } catch (error) {
+    console.error("Video Processing Error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    Alert.alert("Error", `Failed to process video: ${errorMessage}`);
+  } finally {
+    setProcessingMessage(null);
+    setLoading(false);
+  }
+};
 
   const submitUserDataWithAngles = async (videoData: VideoResponse["data"]) => {
     try {
@@ -301,7 +312,7 @@ export default function PoseAnalysisScreen({ route, navigation }: Props) {
               icon={() => <FontAwesome5 name="video" size={24} color="#fff" />}
               labelStyle={styles.buttonText}
             >
-              Record
+             <Text style={styles.buttonText}>Record</Text> 
             </Button>
             <Button
               mode="contained"
@@ -350,37 +361,47 @@ export default function PoseAnalysisScreen({ route, navigation }: Props) {
           {processingMessage && <Text style={styles.processingText}>{processingMessage}</Text>}
         </View>
       )}
-
-      <Modal animationType="slide" transparent={true} visible={modalVisible}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            {modalData ? (
-              <>
-                <Text style={styles.modalTitle}>🏋️ Video Processed!</Text>
-                <Text style={styles.modalText}>🔹 Lift Type: {modalData.video_result.overall_prediction}</Text>
-                <Text style={styles.modalText}>🔹 Technique: {modalData.video_result.technique_feedback}</Text>
-                <Text style={styles.modalText}>🔹 Performance: {modalData.performance_category}</Text>
-                <Text style={styles.modalText}>🔹 Score: {modalData.predicted_performance.toFixed(2)}</Text>
-                <Pressable
-                  style={styles.okButton}
-                  onPress={() => {
-                    setModalVisible(false);
-                    navigation.navigate("ResultsScreen", {
-                      username: modalData.username || "Ashan",
-                      performance: modalData.predicted_performance,
-                      category: modalData.performance_category,
-                    });
-                  }}
-                >
-                  <Text style={styles.okButtonText}>OK</Text>
-                </Pressable>
-              </>
-            ) : (
-              <ActivityIndicator size="large" color="#007BFF" />
-            )}
-          </View>
-        </View>
-      </Modal>
+// Update Modal to display fatigue information
+<Modal animationType="slide" transparent={true} visible={modalVisible}>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      {modalData ? (
+        <>
+          <Text style={styles.modalTitle}>🏋️ Video Processed!</Text>
+          <Text style={styles.modalText}>🔹 Lift Type: {modalData.video_result.overall_prediction}</Text>
+          <Text style={styles.modalText}>🔹 Technique: {modalData.video_result.technique_feedback}</Text>
+          <Text style={styles.modalText}>🔹 Performance: {modalData.performance_category}</Text>
+          <Text style={styles.modalText}>🔹 Score: {modalData.predicted_performance.toFixed(2)}</Text>
+          <Text style={styles.modalText}>🔹 Fatigue Level: {modalData.fatigue_result.fatigue_level}</Text>
+          <Text style={styles.modalText}>🔹 Recommendation: {modalData.fatigue_result.recommendation}</Text>
+          {modalData.fatigue_result.confidence_score && (
+            <Text style={styles.modalText}>
+              🔹 Confidence: {modalData.fatigue_result.confidence_score.toFixed(2)}%
+            </Text>
+          )}
+          <Pressable
+            style={styles.okButton}
+            onPress={() => {
+              setModalVisible(false);
+              navigation.navigate("ResultsScreen", {
+                username: modalData.username || "Ashan",
+                performance: modalData.predicted_performance,
+                category: modalData.performance_category,
+                // Optionally pass fatigue data to ResultsScreen if needed
+                fatigueLevel: modalData.fatigue_result.fatigue_level,
+                fatigueRecommendation: modalData.fatigue_result.recommendation,
+              });
+            }}
+          >
+            <Text style={styles.okButtonText}>OK</Text>
+          </Pressable>
+        </>
+      ) : (
+        <ActivityIndicator size="large" color="#007BFF" />
+      )}
+    </View>
+  </View>
+</Modal>
     </ScrollView>
   );
 }
