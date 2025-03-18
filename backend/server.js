@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Mount routes, etc.
-const userRoutes = require('./routes/UserRoutes');
+const userRoutes = require('./routes/Userroutes');
 app.use('/api', userRoutes);
 
 // Remove deprecated options
