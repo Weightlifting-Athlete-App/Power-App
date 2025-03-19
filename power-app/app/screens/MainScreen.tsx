@@ -1,7 +1,7 @@
-// screens/MainScreen.js
+// screens/MainScreen.tsx
 import React from 'react';
 import PropTypes from 'prop-types';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 
 import { NavigationProp } from '@react-navigation/native';
 
@@ -13,23 +13,36 @@ export default function MainScreen({ navigation }: MainScreenProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Weightlifting Techniques</Text>
+      <Image
+        source={require('../../assets/images/weight.jpg')}
+        style={styles.image}
+      />
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('ExerciseDetails', { exercise: 'Squat' })}
+        onPress={() => navigation.navigate('ExerciseDetails')}
       >
         <Text style={styles.buttonText}>Squat</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('ExerciseDetails', { exercise: 'Deadlift' })}
+        onPress={() => navigation.navigate('ExerciseDetails2')}
       >
-        <Text style={styles.buttonText}>Deadlift</Text>
+        <Text style={styles.buttonText}>Snach</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('ExerciseDetails', { exercise: 'Bench Press' })}
+        onPress={() => navigation.navigate('ExerciseDetails3')}
       >
-        <Text style={styles.buttonText}>Bench Press</Text>
+        <Text style={styles.buttonText}>Clean & Jerk</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Recomondations')}
+      >
+        <Text style={styles.buttonText}>Recomondations</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Feedback')}>
+        <Text style={styles.buttonText}>Feedback</Text>
       </TouchableOpacity>
     </View>
   );
@@ -48,10 +61,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   title: {
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    marginBottom: 20,
   },
   button: {
     backgroundColor: '#007bff',

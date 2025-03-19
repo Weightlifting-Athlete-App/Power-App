@@ -40,20 +40,6 @@ const Feedback: React.FC<FeedbackProps> = ({ username }) => {
     fetchData();
   }, []);
 
-   // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const data = await getUserData(username);
-  //       setUserData(data);
-  //     } catch (error) {
-  //       console.error(error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchData();
-  // }, [username]);
-
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
@@ -70,13 +56,13 @@ const Feedback: React.FC<FeedbackProps> = ({ username }) => {
       <View style={styles.container}>
         <Text style={styles.header}>User Details:</Text>
         <View style={styles.card}>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            <View style={{ width: '50%' }}>
-              <Text style={styles.infoText}>Username: {userData.username}</Text>
+          <View style={styles.row}>
+            <View style={styles.column}>
+              <Text style={styles.infoText}>Name: {userData.username}</Text>
               <Text style={styles.infoText}>Age: {userData.age}</Text>
-              <Text style={styles.infoText}>Years of Experience: {userData.yrs_experience}</Text>
+              <Text style={styles.infoText}>Experience: {userData.yrs_experience}</Text>
             </View>
-            <View style={{ width: '50%' }}>
+            <View style={styles.column}>
               <Text style={styles.infoText}>Body Weight: {userData.body_weight} kg</Text>
               <Text style={styles.infoText}>Lifted Weight: {userData.lifted_weight} kg</Text>
             </View>
@@ -97,7 +83,7 @@ const Feedback: React.FC<FeedbackProps> = ({ username }) => {
         {Object.keys(angles).map((key) => (
           <View key={key} style={styles.riskContainer}>
             <Text style={styles.angleText}>
-              {key.replace('_', ' ').toUpperCase()}: {angles[key]}°
+              {key.replace('_', ' ').toUpperCase()}: {angles[key].toFixed(2)}°
             </Text>
             <Text style={styles.riskText}>
               Risk Level: {injury_risk && injury_risk[key] ? injury_risk[key] : 'No risk data'}
@@ -107,8 +93,6 @@ const Feedback: React.FC<FeedbackProps> = ({ username }) => {
             </Text>
           </View>
         ))}
-
-        
       </View>
     </ScrollView>
   );
@@ -196,87 +180,69 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
   header: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 15,
     color: '#007AFF',
   },
   card: {
     backgroundColor: '#fff',
-    padding: 15,
+    padding: 20,
     borderRadius: 10,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
-    marginBottom: 10,
+    marginBottom: 20,
   },
-  analysisCard: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-    marginBottom: 10,
+  row: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   },
-  performanceCard: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
-    marginBottom: 10,
+  column: {
+    width: '50%',
   },
   infoText: {
     fontSize: 13,
-    marginBottom: 5,
-  },
-  label: {
-    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+    fontFamily: 'times new roman',
   },
   angleText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: 'bold',
+    color: '#333',
   },
   riskText: {
     fontSize: 16,
+    color: '#FF5733',
   },
   feedbackText: {
     fontSize: 14,
     fontStyle: 'italic',
     marginTop: 5,
-  },
-  performanceText: {
-    fontSize: 18,
-    color: 'white',
-    fontWeight: 'bold',
+    color: '#555',
   },
   riskContainer: {
     backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  predictedPerformanceContainer: {
-    marginTop: 20,
     padding: 15,
-    backgroundColor: '#f0f8ff',
-    borderRadius: 8,
+    borderRadius: 10,
+    marginBottom: 15,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
-    marginBottom: 15,
   },
-  predictedPerformanceText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
+  predictedPerformanceContainer: {
+    marginTop: 20,
+    padding: 20,
+    backgroundColor: '#f0f8ff',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+    marginBottom: 20,
   },
   performanceCategoryText: {
     fontSize: 16,

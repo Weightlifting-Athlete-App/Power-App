@@ -32,5 +32,23 @@ router.get('/UserData/:username', async (req, res) => {
   }
 });
 
+router.get('/PerformanceData/:username', async (req, res) => {
+  console.log(`Fetching user: ${req.params.username}`); // Debug log
+  try {
+    const user = await User.findOne({ username: req.params.username });
+    console.log("User found:", user); // Log fetched user data
+
+    if (!user) {
+      console.log("User not found");
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 module.exports = router;
