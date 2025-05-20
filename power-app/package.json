@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
+    "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-native-picker/picker": "^2.11.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.15",
@@ -25,14 +26,17 @@
     "axios": "^1.8.3",
     "expo": "~52.0.37",
     "expo-asset": "~11.0.4",
+    "expo-av": "~15.0.2",
     "expo-blur": "~14.0.3",
     "expo-constants": "~17.0.7",
     "expo-file-system": "^18.0.11",
     "expo-font": "~13.0.4",
     "expo-gl": "~15.0.4",
     "expo-haptics": "~14.0.1",
+    "expo-linear-gradient": "~14.0.2",
     "expo-linking": "~7.0.5",
     "expo-router": "~4.0.17",
+    "expo-speech": "~13.0.1",
     "expo-splash-screen": "~0.29.22",
     "expo-status-bar": "~2.0.1",
     "expo-symbols": "~0.2.2",
@@ -54,10 +58,7 @@
     "react-native-webview": "13.12.5",
     "socket.io-client": "^4.8.1",
     "three": "^0.166.1",
-    "three-stdlib": "^2.35.14",
-    "expo-av": "~15.0.2",
-    "expo-speech": "~13.0.1",
-    "expo-linear-gradient": "~14.0.2"
+    "three-stdlib": "^2.35.14"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
