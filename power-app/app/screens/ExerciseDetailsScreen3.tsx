@@ -12,51 +12,95 @@ import { LinearGradient } from "expo-linear-gradient";
 const voiceInstructions = [
   {
     title: "Starting Position",
-    description: "Feet shoulder-width apart. Hip angle about 90 degrees. Knee angle around 100 degrees. Back is flat, chest up. Grip slightly wider than shoulder-width. Shoulders slightly in front of the bar.",
-    keyPoints: ["Feet shoulder-width", "Hip angle 90°", "Knee angle 100°", "Flat back"]
+    description:
+      "Stand upright with feet shoulder-width apart. Keep your toes slightly turned out, your spine neutral, and your chest lifted. Engage your core muscles to stabilize your body. Hands may be extended in front or held to the sides for balance.",
+    keyPoints: [
+      "Feet shoulder-width apart",
+      "Toes slightly outward",
+      "Neutral spine and chest up",
+      "Core engaged"
+    ]
   },
   {
-    title: "First Pull",
-    description: "Extend knees to lift the bar. Knee angle opens from 100 to 140 degrees. Hip angle remains around 90 to 100 degrees. Maintain flat back angle. Bar moves vertically close to shins.",
-    keyPoints: ["Knee extension", "Hip angle stable", "Bar close to body"]
+    title: "Hip Initiation",
+    description:
+      "Initiate the squat by pushing your hips backward as if sitting into a chair. The knees should bend naturally, staying aligned with your toes. Keep your heels planted and torso upright without leaning forward excessively.",
+    keyPoints: [
+      "Hips move backward",
+      "Knees track with toes",
+      "Heels grounded",
+      "Torso upright"
+    ]
   },
   {
-    title: "Bar Passes Knees",
-    description: "Hip angle begins to open. Hips and shoulders rise together. Hip angle increasing to about 120 degrees. Bar accelerates as it passes mid-thigh. Shoulders remain slightly in front of the bar.",
-    keyPoints: ["Hips rise", "Bar acceleration", "Shoulders forward"]
+    title: "Descending Phase",
+    description:
+      "Lower your body slowly while maintaining control. The hips drop below parallel and knees bend to around 90 degrees. Ensure your back stays neutral and eyes look forward. Avoid letting the knees cave inward.",
+    keyPoints: [
+      "Controlled descent",
+      "Hips below parallel",
+      "Neutral spine maintained",
+      "Knees stay aligned"
+    ]
   },
   {
-    title: "Power Position",
-    description: "Fully extend hips and knees. Hip angle reaches 180 degrees. Knee angle near 180. Shoulders shrug upward. Bar reaches maximal velocity. Full triple extension (ankles, knees, hips).",
-    keyPoints: ["Triple extension", "Maximal velocity", "Shoulder shrug"]
+    title: "Bottom Position",
+    description:
+      "Reach the bottom of the squat. Your thighs should be parallel or below. Core remains braced, knees stay out, and your chest remains proud. Weight should be balanced over the midfoot to heel area.",
+    keyPoints: [
+      "Thighs parallel or lower",
+      "Chest up and core braced",
+      "Weight on heels/midfoot",
+      "Knees outward"
+    ]
   },
   {
-    title: "Pull Under",
-    description: "Begin dropping under the bar. Elbows rotate under. Hips and knees rapidly flex back to 90 and 100 degrees. Aggressive turnover of the elbows. Fast downward movement under the bar.",
-    keyPoints: ["Fast drop", "Elbow rotation", "Hip/knee flexion"]
+    title: "Initial Ascent",
+    description:
+      "Push through your heels to initiate upward movement. Engage your glutes and quadriceps. Keep your torso upright and avoid leaning forward. Move steadily without bouncing at the bottom.",
+    keyPoints: [
+      "Drive through heels",
+      "Glutes and quads engaged",
+      "Controlled lift",
+      "Torso upright"
+    ]
   },
   {
-    title: "Catch Position",
-    description: "Bar overhead. Arms locked. Shoulder angle about 180 degrees. Hips and knees in deep squat—around 60 to 90 degrees. Chest up, core braced. Bar directly over base of support.",
-    keyPoints: ["Arms locked", "Deep squat", "Bar balanced"]
+    title: "Mid Ascent",
+    description:
+      "Continue extending your knees and hips while keeping your back straight. Ensure that your knees do not collapse inward and your chest continues to face forward. Maintain control through the movement.",
+    keyPoints: [
+      "Hip and knee extension",
+      "Chest facing forward",
+      "Knees outward",
+      "Control maintained"
+    ]
   },
   {
-    title: "Recovery",
-    description: "Stand up from the squat. Extend knees and hips to return to vertical. Hip and knee angles return to 180 degrees. Maintain bar position overhead. Finish in stable standing position.",
-    keyPoints: ["Controlled stand", "Maintain balance", "Finish upright"]
-  },
+    title: "Standing Finish",
+    description:
+      "Stand fully upright with hips and knees locked out. Your back remains neutral, core engaged, and eyes facing forward. This marks the end of the squat repetition in a stable position.",
+    keyPoints: [
+      "Hips and knees extended",
+      "Neutral spine at finish",
+      "Core still braced",
+      "Stable standing posture"
+    ]
+  }
 ];
+
 
 // Animation step time ranges (in seconds)
 const stepRanges = [
-  [0.0, 0.5],   // Starting position
-  [0.5, 1.5],   // First pull
-  [1.5, 2.5],   // Bar passes knees
-  [2.5, 3.5],   // Power position
-  [3.5, 4.5],   // Pull under
-  [4.5, 5.5],   // Catch position
-  [5.5, 6.5],   // Recovery
+  [0.0, 0.8],
+  [0.8, 1.6],
+  [1.6, 2.4],
+  [2.4, 3.2],
+  [3.2, 4.0],
+  [4.0, 4.8],
+  [4.8, 5.6],
 ];
+
 
 const AnimatedModel = ({
   modelPath,
@@ -118,7 +162,7 @@ export default function App() {
 
   useEffect(() => {
     async function loadModel() {
-      const asset = Asset.Asset.fromModule(require("../../assets/models/snatch.glb"));
+      const asset = Asset.Asset.fromModule(require("../../assets/models/squart.glb"));
       await asset.downloadAsync();
       setModelPath(asset.localUri);
     }
@@ -206,7 +250,7 @@ export default function App() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Olympic Snatch Tutorial</Text>
+          <Text style={styles.headerTitle}>Olympic Squart Tutorial</Text>
           <Text style={styles.headerSubtitle}>Professional Weightlifting Analysis</Text>
         </View>
 
