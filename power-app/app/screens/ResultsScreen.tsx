@@ -20,6 +20,11 @@ export default function ResultsScreen() {
   const route = useRoute();
   const { username } = route.params as { username: string };
   const [loading, setLoading] = useState(true);
+  interface ApiResponse {
+    data?: any;
+    [key: string]: any;
+  }
+
   const [performanceData, setPerformanceData] = useState<any>(null);
 
   useEffect(() => {
@@ -31,10 +36,10 @@ export default function ResultsScreen() {
       const url = `http://192.168.198.43:5000/get_user_data/${username}`;
       console.log("Fetching data from:", url);
 
-      const response = await axios.get(url);
+      const response = await axios.get<ApiResponse>(url);
       console.log("Response:", response.data);
 
-      if (response.data) {
+      if (response.data && response.data.data) {
         setPerformanceData(response.data.data); // Set to response.data.data
       } else {
         Alert.alert("Error", "No performance data found for this user.");
@@ -101,7 +106,12 @@ export default function ResultsScreen() {
   ];
 
   // Custom Progress Bar Component
-  const ProgressBar = ({ value, label, color }) => (
+  interface ProgressBarProps {
+    value: number;
+    label: string;
+    color: string;
+  }
+  const ProgressBar: React.FC<ProgressBarProps> = ({ value, label, color }) => (
     <View style={styles.progressBarContainer}>
       <Text style={styles.progressBarLabel}>{label}</Text>
       <View style={styles.progressBar}>
@@ -112,7 +122,16 @@ export default function ResultsScreen() {
   );
 
   // Custom Bar Chart Component
-  const BarChart = ({ data }) => {
+  interface BarChartDataItem {
+    angle: string;
+    value: number;
+  }
+
+  interface BarChartProps {
+    data: BarChartDataItem[];
+  }
+
+  const BarChart: React.FC<BarChartProps> = ({ data }) => {
     const maxValue = Math.max(...data.map((item) => item.value));
     const colors = ["#4c669f", "#3b5998", "#192f6a", "#28A745", "#FFC107"];
 
@@ -152,7 +171,14 @@ export default function ResultsScreen() {
   };
 
   // Custom Pie Chart Component
-  const PieChart = ({ data }) => {
+  interface PieChartDataItem {
+    angle: string;
+    value: number;
+  }
+  interface PieChartProps {
+    data: PieChartDataItem[];
+  }
+  const PieChart: React.FC<PieChartProps> = ({ data }) => {
     const total = data.reduce((sum, item) => sum + item.value, 0);
     let startAngle = 0;
     const colors = ["#4c669f", "#3b5998", "#192f6a", "#28A745", "#FFC107"];

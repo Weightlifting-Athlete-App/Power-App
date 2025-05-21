@@ -26,12 +26,17 @@ export default function OverallRecordsScreen() {
     fetchAllUserData();
   }, []);
 
+  interface UserDataResponse {
+    data: any[];
+    [key: string]: any;
+  }
+
   const fetchAllUserData = async () => {
     try {
       const url = `http://192.168.198.43:5000/get_all_user_data/${username}`;
       console.log("Fetching data from:", url);
 
-      const response = await axios.get(url);
+      const response = await axios.get<UserDataResponse>(url);
       console.log("Response:", response.data);
 
       if (response.data && response.data.data) {
@@ -96,7 +101,7 @@ export default function OverallRecordsScreen() {
   }, {} as { [key: string]: number });
 
   // Line Graph Component for Fatigue
-  const FatigueLineGraph = ({ data }) => {
+  const FatigueLineGraph = ({ data }: { data: number[] }) => {
     const maxValue = 2; // Max fatigue label (Low = 2)
     const points = data.map((value, index) => ({
       x: (index / (data.length - 1)) * 300, // 300 is SVG width
@@ -125,7 +130,7 @@ export default function OverallRecordsScreen() {
   };
 
   // Line Graph Component for Performance
-  const PerformanceLineGraph = ({ data }) => {
+  const PerformanceLineGraph = ({ data }: { data: number[] }) => {
     const maxValue = Math.max(...data, 100); // Max performance score
     const points = data.map((value, index) => ({
       x: (index / (data.length - 1)) * 300,
@@ -154,7 +159,7 @@ export default function OverallRecordsScreen() {
   };
 
   // Bar Chart Component for Performance Category
-  const CategoryBarChart = ({ data }) => {
+  const CategoryBarChart = ({ data }: { data: { [key: string]: number } }) => {
     const categories = Object.keys(data);
     const maxCount = Math.max(...Object.values(data));
     const colors = ["#007BFF", "#28A745", "#FFC107", "#DC3545"];
