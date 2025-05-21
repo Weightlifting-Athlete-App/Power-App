@@ -1,12 +1,42 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { getUserData } from '../services/api'; // Adjust the import path as necessary
+interface FeedbackProps {
+  username: string;
+}
 
 interface PoseData {
   shoulderAngle: number;
-  // Add other properties for knee, back, wrist, and hips
+  // Add more pose properties if needed
 }
 
-const FeedbackScreen = ({ poseData }: { poseData: PoseData }) => {
+const Feedback: React.FC<FeedbackProps> = ({ username }) => {
+  const [poseData, setPoseData] = useState<PoseData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPoseData = async () => {
+      try {
+        const data = await getUserData(username);
+        setPoseData(data as PoseData);
+      } catch (error) {
+        console.error('Error fetching pose data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPoseData();
+  }, [username]);
+
+  if (loading || !poseData) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
   const feedback = generateFeedback(poseData);
 
   return (
@@ -18,7 +48,7 @@ const FeedbackScreen = ({ poseData }: { poseData: PoseData }) => {
         <Text style={styles.risk}>{feedback.shoulder.riskLevel}</Text>
         <Text style={styles.message}>{feedback.shoulder.message}</Text>
       </View>
-      {/* Render additional feedback items for knee, back, wrist, and hips */}
+      {/* Add feedback for other joints here */}
     </View>
   );
 };
@@ -33,27 +63,26 @@ const styles = StyleSheet.create({
   message: { fontSize: 16 },
 });
 
-function generateFeedback(poseData: any) {
-    const feedback = {
-        shoulder: {
-            riskLevel: '',
-            message: ''
-        },
-        // Add similar structure for knee, back, wrist, and hips
-    };
+function generateFeedback(poseData: PoseData) {
+  const feedback = {
+    shoulder: {
+      riskLevel: '',
+      message: '',
+    },
+  };
 
-    // Example logic for shoulder feedback
-    if (poseData.shoulderAngle > 90) {
-        feedback.shoulder.riskLevel = 'High Risk';
-        feedback.shoulder.message = 'Your shoulder angle is too high. Consider lowering it to reduce strain.';
-    } else if (poseData.shoulderAngle > 60) {
-        feedback.shoulder.riskLevel = 'Moderate Risk';
-        feedback.shoulder.message = 'Your shoulder angle is moderate. Try to keep it below 60 degrees.';
-    } else {
-        feedback.shoulder.riskLevel = 'Low Risk';
-        feedback.shoulder.message = 'Your shoulder angle is low. Keep up the good work!';
-    }
+  if (poseData.shoulderAngle > 90) {
+    feedback.shoulder.riskLevel = 'High Risk';
+    feedback.shoulder.message = 'Shoulder angle is too high. Lower it to reduce strain.';
+  } else if (poseData.shoulderAngle > 60) {
+    feedback.shoulder.riskLevel = 'Moderate Risk';
+    feedback.shoulder.message = 'Try to keep shoulder angle below 60° for safety.';
+  } else {
+    feedback.shoulder.riskLevel = 'Low Risk';
+    feedback.shoulder.message = 'Shoulder angle is within safe limits. Great job!';
+  }
 
-    return feedback;
+  return feedback;
 }
 
+export default Feedback;
