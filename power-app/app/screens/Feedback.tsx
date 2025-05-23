@@ -28,8 +28,9 @@ const Feedback: React.FC<FeedbackProps> = ({ username }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getUserData("Ashan"); 
-        console.log("Fetched Data:", data); 
+        const data = await getUserData("sahan02"); // 🔴 Hardcoded for testing
+        // const data = await getUserData(username); // ✅ Dynamic from props
+        console.log("Fetched Data:", data);
         setUserData(data);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -38,7 +39,7 @@ const Feedback: React.FC<FeedbackProps> = ({ username }) => {
       }
     };
     fetchData();
-  }, []);
+  }, [username]);
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -115,7 +116,7 @@ const generateFeedback = (joint: string, angle: number, riskLevel?: string, user
           : 'Good shoulder alignment. Work on maintaining your scapular retraction during lifts for better stability.';
       }
       break;
-      
+
     case 'knees_angle':
       if (body_weight > 100) {
         feedback = riskLevel === '🟠 Moderate Risk'
@@ -127,7 +128,7 @@ const generateFeedback = (joint: string, angle: number, riskLevel?: string, user
           : 'Knee position is good, but make sure your feet are properly aligned to avoid knee strain.';
       }
       break;
-      
+
     case 'back_angle':
       if (predicted_performance < 60) {
         feedback = riskLevel === '🔴 High Risk'
@@ -139,7 +140,7 @@ const generateFeedback = (joint: string, angle: number, riskLevel?: string, user
           : 'Good back positioning. Strengthen your lower back and core for more control in heavy lifts.';
       }
       break;
-      
+
     default:
       feedback = 'Keep practicing with proper form and aim for continuous improvement!';
   }
