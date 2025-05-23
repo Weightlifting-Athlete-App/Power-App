@@ -12,13 +12,13 @@ import ExerciseDetailsScreen from './screens/ExerciseDetailsScreen';
 import ExerciseDetailsScreen2 from './screens/ExerciseDetailsScreen2';
 import ExerciseDetailsScreen3 from './screens/ExerciseDetailsScreen3';
 import Recomondations from './screens/Recomondations';
-// import Feedback from './screens/Feedback';
+import Feedback from './screens/Feedback';
 
 const Stack = createStackNavigator();
 
 export default function Layout() {
   return (
-    <Stack.Navigator initialRouteName="Login">
+    <Stack.Navigator initialRouteName="MainScreen">
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />
       <Stack.Screen name="pose-analysis" component={PoseAnalysisScreen} />
@@ -31,7 +31,7 @@ export default function Layout() {
       <Stack.Screen name="ExerciseDetails3" component={ExerciseDetailsScreen3} />
       <Stack.Screen name="MainScreen" component={MainScreen} />
       <Stack.Screen name="Recomondations" component={Recomondations} />
-      {/* <Stack.Screen name="Feedback" component={Feedback} /> */}
+      <Stack.Screen name="Feedback" component={Feedback} />
     </Stack.Navigator>
   );
 }
