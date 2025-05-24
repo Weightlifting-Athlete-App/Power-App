@@ -3,7 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './screens/LoginScreen';
 import SignUpScreen from './screens/SignUpScreen';
 import PoseAnalysisScreen from './screens/PoseAnalysisScreen';
-import ResultsScreen from './screens/ResultsScreen'; 
+import ResultsScreen from './screens/ResultsScreen';
 import HomeScreen from './screens/HomeScreen';
 import UserInputScreen from './screens/UserInputScreen';
 import OverallRecordsScreen from './screens/OverallRecordsScreen';
@@ -13,12 +13,15 @@ import ExerciseDetailsScreen2 from './screens/ExerciseDetailsScreen2';
 import ExerciseDetailsScreen3 from './screens/ExerciseDetailsScreen3';
 import Recomondations from './screens/Recomondations';
 import Feedback from './screens/Feedback';
+import ExerciseInfoScreen from './screens/ExerciseInfoScreen';
+import CategoryScreen from './screens/CategoryScreen';
+import ExerciseListScreen from './screens/ExerciseListScreen';
 
 const Stack = createStackNavigator();
 
 export default function Layout() {
   return (
-    <Stack.Navigator initialRouteName="MainScreen">
+    <Stack.Navigator initialRouteName="homePage">
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />
       <Stack.Screen name="pose-analysis" component={PoseAnalysisScreen} />
@@ -32,6 +35,11 @@ export default function Layout() {
       <Stack.Screen name="MainScreen" component={MainScreen} />
       <Stack.Screen name="Recomondations" component={Recomondations} />
       <Stack.Screen name="Feedback" component={Feedback} />
+
+      <Stack.Screen name="ExerciseInfoScreen" component={ExerciseInfoScreen}/>
+      <Stack.Screen name="CategoryScreen" component={CategoryScreen}/>
+      <Stack.Screen name="ExerciseListScreen" component={ExerciseListScreen}/>
+
     </Stack.Navigator>
   );
 }

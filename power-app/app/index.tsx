@@ -8,6 +8,9 @@ import PoseAnalysisScreen from "./screens/PoseAnalysisScreen";
 import ResultsScreen from "./screens/ResultsScreen";
 import HomeScreen from "./screens/HomeScreen";
 import OverallRecordsScreen from "./screens/OverallRecordsScreen";
+import CategoryScreen from "./screens/CategoryScreen";
+import ExerciseInfoScreen from "./screens/ExerciseInfoScreen";
+import ExerciseListScreen from "./screens/ExerciseListScreen";
 
 //  Define Stack Type
 export type RootStackParamList = {
@@ -37,6 +40,12 @@ export default function App() {
          <Stack.Screen name="ResultsScreen" component={ResultsScreen}/>
          <Stack.screen name="overallResults" component={OverallRecordsScreen}/>
         <Stack.Screen name="homePage" component={HomeScreen} />
+
+        <Stack.Screen name="CategoryScreen" component={CategoryScreen} />
+        <Stack.Screen name="ExerciseInfoScreen" component={ExerciseInfoScreen} />
+        <Stack.Screen name="ExerciseListScreen" component={ExerciseListScreen} />
+
+
       </Stack.Navigator>
     </NavigationContainer>
   );

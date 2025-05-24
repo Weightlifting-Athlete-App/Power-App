@@ -57,12 +57,12 @@ export default function UserInputScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Lottie Animation */}
-      <LottieView
+      {/* <LottieView
         source={require("../../assets/animations/user.json")}
         autoPlay
         loop
         style={styles.animation}
-      />
+      /> */}
 
       <Text style={styles.title}>Enter Your Details 💪</Text>
       <Text style={styles.subtitle}>
@@ -163,7 +163,7 @@ export default function UserInputScreen() {
           labelStyle={styles.buttonText}
           icon={() => <FontAwesome5 name="check" size={24} color="#fff" />}
         >
-          Submit 
+          Submit
         </Button>
       </View>
     </ScrollView>

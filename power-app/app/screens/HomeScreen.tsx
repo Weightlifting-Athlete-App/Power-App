@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { RootStackParamList } from "../index"; // Ensure this is the correct path
-import { FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import LottieView from "lottie-react-native";
 
 export default function HomeScreen() {
@@ -12,7 +12,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       {/* Lottie Animation */}
       <LottieView
-        source={require("../../assets/animations/weightlifter.json")} // Update the path to your Lottie file
+        source={require("../../assets/animations/weightlifter.json")}
         autoPlay
         loop
         style={styles.animation}
@@ -23,21 +23,34 @@ export default function HomeScreen() {
         Analyze your posture, get exercise feedback, and improve performance.
       </Text>
 
-      {/* Navigation Buttons */}
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("UserInput")} // Use navigation.navigate
-      >
-        <FontAwesome5 name="camera" size={24} color="#fff" />
-        <Text style={styles.buttonText}>Start Pose Analysis</Text>
-      </TouchableOpacity>
+      {/* Main Action Buttons Container */}
+      <View style={styles.buttonsContainer}>
+        {/* Pose Analysis Button */}
+        <TouchableOpacity
+          style={[styles.button, styles.primaryButton]}
+          onPress={() => navigation.navigate("UserInput")}
+        >
+          <FontAwesome5 name="camera" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Start Pose Analysis</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.buttonSecondary}
-        onPress={() => navigation.navigate("Login")} // Use navigation.navigate
-      >
-        <Text style={styles.buttonTextSecondary}>LogOut</Text>
-      </TouchableOpacity>
+        {/* Exercises Button */}
+        <TouchableOpacity
+          style={[styles.button, styles.secondaryButton]}
+          onPress={() => navigation.navigate("CategoryScreen")}
+        >
+          <MaterialIcons name="fitness-center" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Browse Exercises</Text>
+        </TouchableOpacity>
+
+        {/* Logout Button */}
+        <TouchableOpacity
+          style={[styles.button, styles.tertiaryButton]}
+          onPress={() => navigation.navigate("Login")}
+        >
+          <Text style={styles.buttonTextTertiary}>Log Out</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -45,58 +58,73 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f8f9fa",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
   animation: {
-    width: 200, // Adjust the size as needed
-    height: 200, // Adjust the size as needed
+    width: 200,
+    height: 200,
     marginBottom: 20,
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#333",
+    color: "#2c3e50",
     textAlign: "center",
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
+    color: "#7f8c8d",
     textAlign: "center",
-    marginVertical: 10,
+    marginBottom: 40,
+    lineHeight: 22,
+    paddingHorizontal: 20,
+  },
+  buttonsContainer: {
+    width: "100%",
+    maxWidth: 400,
+    alignItems: "center",
   },
   button: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#007BFF",
-    padding: 15,
-    borderRadius: 10,
-    marginVertical: 10,
-    width: "80%",
     justifyContent: "center",
+    padding: 18,
+    borderRadius: 12,
+    marginVertical: 8,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  primaryButton: {
+    backgroundColor: "#3498db",
+  },
+  secondaryButton: {
+    backgroundColor: "#2ecc71",
+  },
+  tertiaryButton: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#e74c3c",
   },
   buttonText: {
     color: "#fff",
     fontSize: 18,
-    fontWeight: "bold",
-    marginLeft: 10,
+    fontWeight: "600",
+    marginLeft: 12,
   },
-  buttonSecondary: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 10,
-    marginVertical: 10,
-    width: "80%",
-    justifyContent: "center",
-    alignItems: "center",
-    borderColor: "#007BFF",
-    borderWidth: 2,
-  },
-  buttonTextSecondary: {
-    color: "#007BFF",
+  buttonTextTertiary: {
+    color: "#e74c3c",
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
 });
