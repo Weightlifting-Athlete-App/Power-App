@@ -11,12 +11,12 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       {/* Lottie Animation */}
-      <LottieView
+      {/* <LottieView
         source={require("../../assets/animations/weightlifter.json")}
         autoPlay
         loop
         style={styles.animation}
-      />
+      /> */}
 
       <Text style={styles.title}>Welcome to Power App 💪</Text>
       <Text style={styles.subtitle}>
@@ -40,7 +40,7 @@ export default function HomeScreen() {
           onPress={() => navigation.navigate("CategoryScreen")}
         >
           <MaterialIcons name="fitness-center" size={24} color="#fff" />
-          <Text style={styles.buttonText}>Browse Exercises</Text>
+          <Text style={styles.buttonText}>Rehabilitation Exercises</Text>
         </TouchableOpacity>
 
         {/* Logout Button */}

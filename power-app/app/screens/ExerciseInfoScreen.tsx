@@ -143,7 +143,7 @@ export default function ExerciseInfoScreen() {
         webVideoStream.getTracks().forEach(track => track.stop());
       };
       mediaRecorder.start();
-      setTimeout(() => mediaRecorder.stop(), 15000);
+      setTimeout(() => mediaRecorder.stop(), 10000);
     });
   };
 
