@@ -27,21 +27,20 @@ const Feedback: React.FC<FeedbackProps> = ({ username }) => {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
 
- useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const data = await getUserData(username); // dynamically use prop
-      console.log("Fetched Data:", data);
-      setUserData(data as UserData);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchData();
-}, [username]);
-
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getUserData("Ashan01");
+        console.log("Fetched Data:", data);
+        setUserData(data as UserData);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -276,3 +275,4 @@ const styles = StyleSheet.create({
 });
 
 export default Feedback;
+
