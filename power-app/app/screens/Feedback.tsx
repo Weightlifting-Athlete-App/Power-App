@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { getUserData } from '../services/api';
 
 interface FeedbackProps {
@@ -24,21 +25,23 @@ interface UserData {
 const Feedback: React.FC<FeedbackProps> = ({ username }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getUserData("Ashan"); 
-        console.log("Fetched Data:", data); 
-        setUserData(data as UserData);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+ useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const data = await getUserData(username); // dynamically use prop
+      console.log("Fetched Data:", data);
+      setUserData(data as UserData);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchData();
+}, [username]);
+
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -93,6 +96,11 @@ const Feedback: React.FC<FeedbackProps> = ({ username }) => {
             </Text>
           </View>
         ))}
+
+        {/* Exercise Navigation Button */}
+        <TouchableOpacity style={styles.exerciseButton} onPress={() => navigation.navigate('MainScreen')}>
+          <Text style={styles.exerciseButtonText}>Improve with Guided Exercises</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -100,7 +108,6 @@ const Feedback: React.FC<FeedbackProps> = ({ username }) => {
 
 const generateFeedback = (joint: string, angle: number, riskLevel?: string, userData?: UserData): string => {
   const { yrs_experience = 0, body_weight = 0, predicted_performance = 0, performance_category = '' } = userData || {};
-
   let feedback = '';
 
   switch (joint) {
@@ -115,7 +122,7 @@ const generateFeedback = (joint: string, angle: number, riskLevel?: string, user
           : 'Good shoulder alignment. Work on maintaining your scapular retraction during lifts for better stability.';
       }
       break;
-      
+
     case 'knees_angle':
       if (body_weight > 100) {
         feedback = riskLevel === '🟠 Moderate Risk'
@@ -127,7 +134,7 @@ const generateFeedback = (joint: string, angle: number, riskLevel?: string, user
           : 'Knee position is good, but make sure your feet are properly aligned to avoid knee strain.';
       }
       break;
-      
+
     case 'back_angle':
       if (predicted_performance < 60) {
         feedback = riskLevel === '🔴 High Risk'
@@ -139,7 +146,7 @@ const generateFeedback = (joint: string, angle: number, riskLevel?: string, user
           : 'Good back positioning. Strengthen your lower back and core for more control in heavy lifts.';
       }
       break;
-      
+
     default:
       feedback = 'Keep practicing with proper form and aim for continuous improvement!';
   }
@@ -253,6 +260,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#FF5733',
+  },
+  exerciseButton: {
+    marginTop: 30,
+    padding: 15,
+    backgroundColor: '#007AFF',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  exerciseButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

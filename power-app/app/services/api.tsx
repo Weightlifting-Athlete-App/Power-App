@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
-const API_URL = 'http:// 192.168.8.145:5000/api';
+const API_URL = 'http://192.168.253.45:5000/api';
 
 export const getUserData = async (username: string) => {
   try {

@@ -21,7 +21,7 @@ const Stack = createStackNavigator();
 
 export default function Layout() {
   return (
-    <Stack.Navigator initialRouteName="MainScreen">
+    <Stack.Navigator initialRouteName="Login">
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />
       <Stack.Screen name="pose-analysis" component={PoseAnalysisScreen} />

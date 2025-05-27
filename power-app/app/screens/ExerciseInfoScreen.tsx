@@ -40,7 +40,7 @@ export default function ExerciseInfoScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [videoStatus, setVideoStatus] = useState<AVPlaybackStatus | null>(null);
 
-  const endpoint = 'http://192.168.1.95:5000/processVideo';
+  const endpoint = 'http://192.168.253.95:5000/processVideo';
 
   useEffect(() => {
     (async () => {

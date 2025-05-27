@@ -34,13 +34,30 @@ export default function HomeScreen() {
           <Text style={styles.buttonText}>Start Pose Analysis</Text>
         </TouchableOpacity>
 
+        {/* MainScreen Button */}
+        <TouchableOpacity
+          style={[styles.button, styles.primaryButton]}
+          onPress={() => navigation.navigate("MainScreen")}
+        >
+        <FontAwesome5 name="chart-bar" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Training Techniques</Text>
+        </TouchableOpacity>
+
         {/* Exercises Button */}
         <TouchableOpacity
-          style={[styles.button, styles.secondaryButton]}
+          style={[styles.button, styles.primaryButton]}
           onPress={() => navigation.navigate("CategoryScreen")}
         >
           <MaterialIcons name="fitness-center" size={24} color="#fff" />
           <Text style={styles.buttonText}>Rehabilitation Exercises</Text>
+        </TouchableOpacity>
+        {/*Meal Plan Button */}
+        <TouchableOpacity
+          style={[styles.button, styles.primaryButton]}
+          onPress={() => navigation.navigate("MealPlanScreen")}
+        >
+          <MaterialIcons name="restaurant" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Meal Plans</Text>
         </TouchableOpacity>
 
         {/* Logout Button */}

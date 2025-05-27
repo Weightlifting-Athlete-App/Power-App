@@ -33,7 +33,7 @@ export default function ResultsScreen() {
 
   const fetchPerformanceData = async () => {
     try {
-      const url = `http://192.168.198.43:5000/get_user_data/${username}`;
+      const url = `http://192.168.253.43:5000/get_user_data/${username}`;
       console.log("Fetching data from:", url);
 
       const response = await axios.get<ApiResponse>(url);

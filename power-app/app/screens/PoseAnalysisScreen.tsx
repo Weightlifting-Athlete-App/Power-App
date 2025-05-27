@@ -184,7 +184,7 @@ const processVideo = async (uri: string) => {
     if (!videoBase64) throw new Error("Failed to convert video to base64");
 
     const response = await axios.post<VideoResponse>(
-      "http://192.168.198.43:5000/process_video",
+      "http://192.168.253.45:5000/process_video",
       {
         video: videoBase64,
         user_data: initialUserData || {
@@ -227,7 +227,7 @@ const processVideo = async (uri: string) => {
         pose_data: { angles: videoData.pose_data.angles },
       };
 
-      await axios.post("http://192.168.198.43:5000/submit_user_data", userDataWithAngles, {
+      await axios.post("http://192.168.253.43:5000/submit_user_data", userDataWithAngles, {
         headers: { "Content-Type": "application/json" },
       });
     } catch (error) {
