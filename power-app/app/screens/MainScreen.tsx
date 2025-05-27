@@ -14,7 +14,7 @@ export default function MainScreen({ navigation }: MainScreenProps) {
     { name: 'Snatch', screen: 'ExerciseDetails' },
     { name: 'Squat', screen: 'ExerciseDetails2' },
     { name: 'Clean & Jerk', screen: 'ExerciseDetails3' },
-    { name: 'Recomondations', screen: 'Recomondations' },
+    { name: 'Performance Feedback Record', screen: 'Recomondations' },
     { name: 'Feedback', screen: 'Feedback' },
   ];
 

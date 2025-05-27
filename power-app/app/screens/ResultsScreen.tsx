@@ -336,6 +336,11 @@ export default function ResultsScreen() {
         >
           <Text style={styles.buttonTextSecondary}>Overrall Analysis</Text>
         </TouchableOpacity>
+        
+         <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => navigation.navigate("Feedback")}
+                ></TouchableOpacity>
       </View>
     </ScrollView>
   );

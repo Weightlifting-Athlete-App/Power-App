@@ -121,7 +121,7 @@ const processVideo = async (uri: string) => {
   } catch (error) {
     console.error("Video Processing Error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    Alert.alert("Error", Failed to process video: ${errorMessage});
+    Alert.alert("Error", `Failed to process video: ${errorMessage}`);
   } finally {
     setProcessingMessage(null);
     setLoading(false);
@@ -147,7 +147,7 @@ const processVideo = async (uri: string) => {
     } catch (error) {
       console.error("Submit User Data Error:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      Alert.alert("Error", Failed to submit user data: ${errorMessage});
+      Alert.alert("Error", `Failed to submit user data: ${errorMessage}`);
     }
   };
 
