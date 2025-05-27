@@ -85,93 +85,7 @@ export default function PoseAnalysisScreen({ route, navigation }: Props) {
   const [showCamera, setShowCamera] = useState(true);
   
 
-  useEffect(() => {
-    const requestPermissions = async () => {
-      const cameraResponse = await requestCameraPermission();
-      const micResponse = await requestMicPermission();
-
-      if (cameraResponse.status !== PermissionStatus.GRANTED) {
-        Alert.alert("Permission Error", "Camera permission is required.");
-      }
-      if (micResponse.status !== PermissionStatus.GRANTED) {
-        Alert.alert("Permission Warning", "Microphone permission is optional.");
-      }
-    };
-    requestPermissions();
-  }, [requestCameraPermission, requestMicPermission]);
-
-  const canRecord = () => cameraPermission?.granted;
-
-  const playBeepSound = async () => {
-    try {
-      const { sound } = await Audio.Sound.createAsync(require("../../assets/sounds/beep.wav"));
-      await sound.playAsync();
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) sound.unloadAsync();
-      });
-    } catch (error) {
-      console.error("Beep Sound Error:", error);
-    }
-  };
-
-  const startCountdown = async () => {
-    if (!canRecord()) {
-      Alert.alert("Permission Required", "Camera permission is required.");
-      return;
-    }
-
-    setCountdown(3);
-    for (let i = 3; i >= 0; i--) {
-      await playBeepSound();
-      setCountdown(i);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-    setCountdown(null);
-    startRecording();
-  };
-
-  const startRecording = async () => {
-    if (!cameraRef.current || isRecording) return;
-
-    setIsRecording(true);
-    setRecordingTime(0);
-    setShowCamera(true);
-
-    const interval = setInterval(() => {
-      setRecordingTime((prev) => {
-        if (prev >= 20) {
-          clearInterval(interval);
-          stopRecording();
-          return 20;
-        }
-        return prev + 1;
-      });
-    }, 1000);
-
-    try {
-      const video = await cameraRef.current.recordAsync({ maxDuration: 20 });
-      if (video?.uri) {
-        setShowCamera(false);
-        await processVideo(video.uri);
-      } else {
-        Alert.alert("Error", "Failed to record video.");
-      }
-    } catch (error) {
-      console.error("Recording Error:", error);
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      Alert.alert("Error", `Failed to record video: ${errorMessage}`);
-    } finally {
-      clearInterval(interval);
-      setIsRecording(false);
-    }
-  };
-
-  const stopRecording = () => {
-    if (cameraRef.current && isRecording) {
-      cameraRef.current.stopRecording();
-    }
-  };
-
+ 
 // Update processVideo function to handle fatigue data
 const processVideo = async (uri: string) => {
   setProcessingMessage("Processing video, please wait...");
@@ -184,7 +98,7 @@ const processVideo = async (uri: string) => {
     if (!videoBase64) throw new Error("Failed to convert video to base64");
 
     const response = await axios.post<VideoResponse>(
-      "http://192.168.198.43:5000/process_video",
+      "http://192.168.253.43:5000/process_video",
       {
         video: videoBase64,
         user_data: initialUserData || {
@@ -227,7 +141,7 @@ const processVideo = async (uri: string) => {
         pose_data: { angles: videoData.pose_data.angles },
       };
 
-      await axios.post("http://192.168.198.43:5000/submit_user_data", userDataWithAngles, {
+      await axios.post("http://192.168.253.43:5000/submit_user_data", userDataWithAngles, {
         headers: { "Content-Type": "application/json" },
       });
     } catch (error) {
@@ -277,55 +191,7 @@ const processVideo = async (uri: string) => {
         Record or upload a video to analyze your lifting technique.
       </Text>
 
-      {!isUploading ? (
-        <>
-          {showCamera && (
-            <>
-              <CameraView style={styles.camera} facing="back" ref={cameraRef} />
-              {!isRecording && (
-                <View style={styles.anglesContainer}>
-                  {Object.entries(jointAngles).map(([key, value]) => (
-                    <Text key={key} style={styles.angleText}>
-                      {key.replace("_angle", "")}: {value.toFixed(1)}°
-                    </Text>
-                  ))}
-                </View>
-              )}
-              {countdown !== null && (
-                <View style={styles.countdownContainer}>
-                  <Text style={styles.countdownText}>{countdown}</Text>
-                </View>
-              )}
-              {isRecording && (
-                <View style={styles.recordingTimeContainer}>
-                  <Text style={styles.recordingTimeText}>{recordingTime}s</Text>
-                </View>
-              )}
-            </>
-          )}
-          <View style={styles.buttonContainer}>
-            <Button
-              mode="contained"
-              onPress={startCountdown}
-              style={styles.button}
-              disabled={loading || isRecording}
-              icon={() => <FontAwesome5 name="video" size={24} color="#fff" />}
-              labelStyle={styles.buttonText}
-            >
-             <Text style={styles.buttonText}>Record</Text> 
-            </Button>
-            <Button
-              mode="contained"
-              onPress={() => setIsUploading(true)}
-              style={styles.buttonSecondary}
-              disabled={loading}
-              labelStyle={styles.buttonTextSecondary}
-            >
-              Upload
-            </Button>
-          </View>
-        </>
-      ) : (
+      (
         <View style={styles.uploadContainer}>
           <Text style={styles.uploadTitle}>Upload Video</Text>
           <LottieView
@@ -353,7 +219,7 @@ const processVideo = async (uri: string) => {
             Back
           </Button>
         </View>
-      )}
+      )
 
       {loading && (
         <View style={styles.loadingContainer}>

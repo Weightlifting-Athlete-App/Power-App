@@ -29,7 +29,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
 
     setLoading(true);
     try {
-      const response = await axios.post("http://192.168.198.43:5000/register", {
+      const response = await axios.post("http://192.168.253.43:5000/register", {
         username,
         password,
       });

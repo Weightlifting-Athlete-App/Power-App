@@ -24,7 +24,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
     setLoading(true);
     try {
-      const response = await axios.post("http://192.168.198.43:5000/login", {
+      const response = await axios.post("http://192.168.253.43:5000/login", {
         username,
         password,
       });

@@ -35,7 +35,7 @@ export default function App() {
         <Stack.Screen name="UserInput" component={UserInputScreen} />
         <Stack.Screen name="pose-analysis" component={PoseAnalysisScreen} />
          <Stack.Screen name="ResultsScreen" component={ResultsScreen}/>
-         <Stack.screen name="overallResults" component={OverallRecordsScreen}/>
+         <Stack.Screen name="overallResults" component={OverallRecordsScreen}/>
         <Stack.Screen name="homePage" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
